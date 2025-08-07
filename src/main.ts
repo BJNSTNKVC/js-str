@@ -1,5 +1,3 @@
-// noinspection SpellCheckingInspection
-
 type CharacterType = string | string[] | null;
 
 type HtmlStringType = HTMLElement | Node | string;
@@ -23,7 +21,7 @@ class Str {
      *
      * @param { string } string
      */
-    static of(string: string) {
+    static of(string: string): Stringable {
         return new Stringable(string);
     }
 
@@ -350,14 +348,16 @@ class Str {
      * Replace consecutive instances of a given character with a single character in the given string.
      *
      * @param { string } string
-     * @param { string } character
+     * @param { string | string[] } characters
      *
      * @return { string }
      */
-    static deduplicate(string: string, character: string = ' '): string {
-        const regex: RegExp = new RegExp(`${character}+`, 'g');
+    static deduplicate(string: string, characters: string | string[] = ' '): string {
+        if (Array.isArray(characters)) {
+            return characters.reduce((carry: string, character: string): string => carry.replace(new RegExp(`${character.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}+`, 'gu'), character), string);
+        }
 
-        return string.replace(regex, character);
+        return string.replace(new RegExp(`${preg_quote(characters)}+`, 'gu'), characters);
     }
 
     /**
@@ -3065,12 +3065,12 @@ class Stringable {
     /**
      * Replace consecutive instances of a given character with a single character in the given string.
      *
-     * @param { string } character
+     * @param { string | string[] } characters
      *
      * @return { string }
      */
-    deduplicate(character: string = ' '): Stringable {
-        return new Stringable(Str.deduplicate(this.#value, character));
+    deduplicate(characters: string | string[] = ' '): Stringable {
+        return new Stringable(Str.deduplicate(this.#value, characters));
     }
 
     /**
@@ -4755,17 +4755,6 @@ class HtmlString {
     }
 }
 
-/**
- * Get a new Stringable object from the given string.
- *
- * @param { string } string
- *
- * @return Stringable
- */
-const str: (string: string) => Stringable = function (string: string = ''): Stringable {
-    return Str.of(string);
-};
-
 class RegExpString {
     /**
      * Build the Regular Expression string from the given parameter.
@@ -4795,6 +4784,17 @@ class RegExpString {
 }
 
 /**
+ * Get a new Stringable object from the given string.
+ *
+ * @param { string } string
+ *
+ * @return Stringable
+ */
+function str(string: string = ''): Stringable {
+    return Str.of(string);
+}
+
+/**
  * Quote regular expression characters.
  *
  * @param { string } string The input string.
@@ -4805,7 +4805,15 @@ class RegExpString {
  * @return { string } The quoted (escaped) string.
  */
 function preg_quote(string: string, delimiter: string | null = null): string {
-    return (string + '').replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + (delimiter ?? '') + '-]', 'g'), '\\$&');
+    const characters: (string | null)[] = [
+        '-', '.', '\\', '+', '*', '?', '[', '^', ']',
+        '$', '(', ')', '{', '}', '=', '!', '<', '>',
+        '|', ':', delimiter
+    ];
+
+    const escaped: string = characters.filter(Boolean).map((character: string): string => `\\${character}`).join('');
+
+    return string.replace(new RegExp(`[${escaped}]`, 'g'), '\\$&');
 }
 
 /**
@@ -4847,6 +4855,8 @@ function matchCase(value: string, comparison: string): string {
 
 if (typeof exports != 'undefined') {
     module.exports.Str = Str;
+    module.exports.Stringable = Stringable;
+    module.exports.HtmlString = HtmlString;
     module.exports.str = str;
 }
 
@@ -4857,5 +4867,6 @@ if (typeof global !== 'undefined') {
     _global.Mode = Mode;
     _global.Str = Str;
     _global.Stringable = Stringable;
+    _global.HtmlString = HtmlString;
     _global.str = str;
 }

@@ -314,6 +314,14 @@ Str.deduplicate('The---Laravel---Framework', '-')
 // The-Laravel-Framework
 ```
 
+You can also pass an array of characters to replace consecutive instances of:
+
+```js
+Str.deduplicate(' Laravell Frramework ', [' ', 'l', 'r'])
+
+//  Laravell Frramework
+```
+
 #### Str.endsWith()
 
 The `Str.endsWith` method determines if the given string ends with the given value:
@@ -1611,6 +1619,13 @@ Str.of('The---Laravel---Framework', '-').deduplicate()
 // The-Laravel-Framework
 ```
 
+You can also pass an array of characters to replace consecutive instances of:
+
+```js
+Str.of(' Laravell Frramework ').deduplicate([' ', 'l', 'r'])
+
+//  Laravell Frramework
+```
 #### dirname
 
 The `dirname` method return the parent directory portion of the given string:
