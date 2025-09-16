@@ -175,8 +175,30 @@ describe('Strings', (): void => {
             expect(Str.endsWith('This is my name', ['name', 'foo'])).toBeTruthy();
         });
 
-        test('determines if the given string does not end with any of the values in the array', (): void => {
+        test('returns false if the given string does not end with the given value', (): void => {
+            expect(Str.endsWith('This is my name', 'names')).toBeFalsy();
+        });
+
+        test('returns false if the given string does not end with any of the values in the array', (): void => {
             expect(Str.endsWith('This is my name', ['this', 'foo'])).toBeFalsy();
+        });
+    });
+
+    describe('Str.doesntEndWith', (): void => {
+        test('determines if the given string does not end with the given value', (): void => {
+            expect(Str.doesntEndWith('This is my name', 'names')).toBeTruthy();
+        });
+
+        test('determines if the given string does not end with any of the values in the array', (): void => {
+            expect(Str.doesntEndWith('This is my name', ['names', 'foo'])).toBeTruthy();
+        });
+
+        test('returns false if the given string ends with the given value', (): void => {
+            expect(Str.doesntEndWith('This is my name', 'name')).toBeFalsy();
+        });
+
+        test('returns false if the string ends with the given value', (): void => {
+            expect(Str.doesntEndWith('This is my name', ['name', 'foo'])).toBeFalsy();
         });
     });
 
@@ -778,7 +800,36 @@ describe('Strings', (): void => {
     describe('Str.startsWith', (): void => {
         test('determines if the given string begins with the given value', (): void => {
             expect(Str.startsWith('This is my name', 'This')).toBeTruthy();
+        });
+
+        test('determines if the given string begins with any of the values in the array', (): void => {
             expect(Str.startsWith('This is my name', ['This', 'That', 'There'])).toBeTruthy();
+        });
+
+        test('returns false if the given string does not start with the given value', (): void => {
+            expect(Str.startsWith('This is my name', 'There')).toBeFalsy();
+        });
+
+        test('returns false if the given string does not start with any of the values in the array', (): void => {
+            expect(Str.startsWith('This is my name', ['That', 'There'])).toBeFalsy();
+        });
+    });
+
+    describe('Str.doesntStartWith', (): void => {
+        test('determines if the given string does not start with the given value', (): void => {
+            expect(Str.doesntStartWith('This is my name', 'There')).toBeTruthy();
+        });
+
+        test('determines if the given string does not start with any of the values in the array', (): void => {
+            expect(Str.doesntStartWith('This is my name', ['There', 'foo'])).toBeTruthy();
+        });
+
+        test('returns false if the given string starts with the given value', (): void => {
+            expect(Str.doesntStartWith('This is my name', 'This')).toBeFalsy();
+        });
+
+        test('returns false if the string ends starts the given value', (): void => {
+            expect(Str.doesntStartWith('This is my name', ['This', 'foo'])).toBeFalsy();
         });
     });
 
@@ -1168,13 +1219,43 @@ describe('Fluent Strings', (): void => {
 
     describe('endsWith', (): void => {
         test('determines if the given string ends with the given value', (): void => {
-            expect(Str.of('This is my name').endsWith('name').toString()).toBeTruthy();
+            expect(Str.of('This is my name').endsWith('name')).toBeTruthy();
+        });
+
+        test('determines if the given string ends with any of the values in the array', (): void => {
+            expect(Str.of('This is my name').endsWith(['name', 'foo'])).toBeTruthy();
+        });
+
+        test('returns false if the given string does not end with the given value', (): void => {
+            expect(Str.of('This is my name').endsWith('names')).toBeFalsy();
+        });
+
+        test('returns false if the given string does not end with any of the values in the array', (): void => {
+            expect(Str.of('This is my name').endsWith(['this', 'foo'])).toBeFalsy();
+        });
+    });
+
+    describe('doesntEndWith', (): void => {
+        test('determines if the given string does not end with the given value', (): void => {
+            expect(Str.of('This is my name').doesntEndWith('names')).toBeTruthy();
+        });
+
+        test('determines if the given string does not end with any of the values in the array', (): void => {
+            expect(Str.of('This is my name').doesntEndWith(['names', 'foo'])).toBeTruthy();
+        });
+
+        test('returns false if the given string ends with the given value', (): void => {
+            expect(Str.of('This is my name').doesntEndWith('name')).toBeFalsy();
+        });
+
+        test('returns false if the string ends with the given value', (): void => {
+            expect(Str.of('This is my name').doesntEndWith(['name', 'foo'])).toBeFalsy();
         });
     });
 
     describe('exactly', (): void => {
         test('determines if the given string is an exact match with another string', (): void => {
-            expect(Str.of('Laravel').exactly('Laravel').toString()).toBeTruthy();
+            expect(Str.of('Laravel').exactly('Laravel')).toBeTruthy();
         });
     });
 
@@ -1255,7 +1336,7 @@ describe('Fluent Strings', (): void => {
 
     describe('isUlid', (): void => {
         test('determines if a given string is a ULID', (): void => {
-            expect(Str.of('01gd6r360bp37zj17nxb55yv40').toString()).toBeTruthy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv40').isUlid()).toBeTruthy();
             expect(Str.of('Taylor').isUlid()).toBeFalsy();
         });
     });
@@ -1625,6 +1706,42 @@ describe('Fluent Strings', (): void => {
     describe('squish', (): void => {
         test('removes all extraneous white space from a string', (): void => {
             expect(Str.of('    laravel    framework    ').squish().toString()).toEqual('laravel framework');
+        });
+    });
+
+    describe('startsWith', (): void => {
+        test('determines if the given string begins with the given value', (): void => {
+            expect(Str.of('This is my name').startsWith('This')).toBeTruthy();
+        });
+
+        test('determines if the given string begins with any of the values in the array', (): void => {
+            expect(Str.of('This is my name').startsWith(['This', 'That', 'There'])).toBeTruthy();
+        });
+
+        test('returns false if the given string does not start with the given value', (): void => {
+            expect(Str.of('This is my name').startsWith('There')).toBeFalsy();
+        });
+
+        test('returns false if the given string does not start with any of the values in the array', (): void => {
+            expect(Str.of('This is my name').startsWith(['That', 'There'])).toBeFalsy();
+        });
+    });
+
+    describe('doesntStartWith', (): void => {
+        test('determines if the given string does not start with the given value', (): void => {
+            expect(Str.of('This is my name').doesntStartWith('There')).toBeTruthy();
+        });
+
+        test('determines if the given string does not start with any of the values in the array', (): void => {
+            expect(Str.of('This is my name').doesntStartWith(['There', 'foo'])).toBeTruthy();
+        });
+
+        test('returns false if the given string starts with the given value', (): void => {
+            expect(Str.of('This is my name').doesntStartWith('This')).toBeFalsy();
+        });
+
+        test('returns false if the string ends starts the given value', (): void => {
+            expect(Str.of('This is my name').doesntStartWith(['This', 'foo'])).toBeFalsy();
         });
     });
 
