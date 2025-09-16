@@ -190,7 +190,7 @@ class Str {
 
         needle = Array.isArray(needle) ? needle : [needle];
 
-        needle.forEach((word: string) => {
+        needle.forEach((word: string): void => {
             if (subject.startsWith(word)) {
                 results = subject.substring(word.length);
             }
@@ -213,7 +213,7 @@ class Str {
 
         needle = Array.isArray(needle) ? needle : [needle];
 
-        needle.forEach((word: string) => {
+        needle.forEach((word: string): void => {
             if (subject.endsWith(word)) {
                 results = subject.substring(0, subject.length - word.length);
             }
@@ -226,7 +226,7 @@ class Str {
      * Determine if a given string contains a given substring.
      *
      * @param { string } haystack
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      * @param { boolean } ignoreCase
      *
      * @return { boolean }
@@ -242,7 +242,7 @@ class Str {
             needles = [needles];
         }
 
-        needles.forEach((needle: string) => {
+        needles.forEach((needle: string): void => {
             if (ignoreCase) {
                 needle = needle.toLowerCase();
             }
@@ -259,7 +259,7 @@ class Str {
      * Determine if a given string contains all array values.
      *
      * @param { string } haystack
-     * @param { array } needles
+     * @param { string[] } needles
      * @param { boolean } ignoreCase
      *
      * @return { boolean }
@@ -267,7 +267,7 @@ class Str {
     static containsAll(haystack: string, needles: string[], ignoreCase: boolean = false): boolean {
         let result: boolean = true;
 
-        needles.forEach((needle: string) => {
+        needles.forEach((needle: string): void => {
             if (!this.contains(haystack, needle, ignoreCase)) {
                 result = false;
             }
@@ -280,7 +280,7 @@ class Str {
      * Determine if a given string doesn't contain a given substring.
      *
      * @param { string } haystack
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      * @param { boolean } ignoreCase
      *
      * @return { boolean }
@@ -364,7 +364,7 @@ class Str {
      * Determine if a given string ends with a given substring.
      *
      * @param { string } haystack
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      *
      * @return { boolean }
      */
@@ -375,13 +375,25 @@ class Str {
             needles = [needles];
         }
 
-        needles.forEach((needle: string) => {
+        needles.forEach((needle: string): void => {
             if (needle !== '' && haystack.endsWith(needle)) {
                 result = true;
             }
         });
 
         return result;
+    }
+
+    /**
+     * Determine if a given string doesn't end with a given substring.
+     *
+     * @param { string } haystack
+     * @param { string | string[] } needles
+     *
+     * @return { boolean }
+     */
+    static doesntEndWith(haystack: string, needles: string | string[]): boolean {
+        return !this.endsWith(haystack, needles);
     }
 
     /**
@@ -410,15 +422,15 @@ class Str {
         start = this.of(this.substr(start, Math.max((start.length - radius), 0), radius))
             .ltrim()
             .unless(
-                (startWithRadius: Stringable) => startWithRadius.exactly(start),
-                (startWithRadius: Stringable) => startWithRadius.prepend(omission))
+                (startWithRadius: Stringable): boolean => startWithRadius.exactly(start),
+                (startWithRadius: Stringable): Stringable => startWithRadius.prepend(omission))
             .toString();
 
         end = this.of(this.substr(end, 0, radius))
             .rtrim()
             .unless(
-                (endWithRadius: Stringable) => endWithRadius.exactly(end),
-                (endWithRadius: Stringable) => endWithRadius.append(omission))
+                (endWithRadius: Stringable): boolean => endWithRadius.exactly(end),
+                (endWithRadius: Stringable): Stringable => endWithRadius.append(omission))
             .toString();
 
         return (start + ' ' + matches[2] + end).replace(/\s+/g, ' ').trim();
@@ -473,7 +485,7 @@ class Str {
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | array } pattern
+     * @param { string | string[] } pattern
      * @param { string } value
      * @param { boolean } ignoreCase
      *
@@ -734,7 +746,7 @@ class Str {
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | array } pattern
+     * @param { string | string[] } pattern
      * @param { string } value
      *
      * @return { boolean }
@@ -771,7 +783,7 @@ class Str {
      * @param { string } pattern
      * @param { string } subject
      *
-     * @return { array }
+     * @return { string[] }
      */
     static matchAll(pattern: string, subject: string): string[] {
         const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
@@ -785,7 +797,7 @@ class Str {
             return [];
         }
 
-        return matches.map((match: RegExpMatchArray) => String(match.length === 1 ? match[0] : match[1]));
+        return matches.map((match: RegExpMatchArray): string => String(match.length === 1 ? match[0] : match[1]));
     }
 
     /**
@@ -1466,7 +1478,7 @@ class Str {
 
         let string: string = btoa(bytes);
 
-        ['/', '+', '='].forEach((char: string) => string = string.replace(char, ''));
+        ['/', '+', '='].forEach((character: string): string => string = string.replace(character, ''));
 
         return string.substring(0, length);
     }
@@ -1497,7 +1509,7 @@ class Str {
 
         let result: string = segments.shift()!;
 
-        segments.forEach((segment: string) => result += Str.toStringOr(replace.shift() ?? search, search) + segment);
+        segments.forEach((segment: string): string => result += Str.toStringOr(replace.shift() ?? search, search) + segment);
 
         return result;
     }
@@ -1539,7 +1551,7 @@ class Str {
             search = [search];
         }
 
-        search.forEach((term: string | RegExp) => {
+        search.forEach((term: string | RegExp): void => {
             if (!caseSensitive) {
                 term = new RegExp(term, 'gi');
             }
@@ -1653,7 +1665,7 @@ class Str {
         const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
 
         if (replace instanceof Function) {
-            subject = subject.replace(expression, (matched) => matched);
+            subject = subject.replace(expression, (matched: string): string => matched);
         }
 
         return subject.replace(expression, (replace as string));
@@ -1717,9 +1729,7 @@ class Str {
      */
     static title(value: string): string {
         return value.split(/[^A-Za-z]/)
-            .map((word: string) => {
-                return this.ucfirst(word[0] + word.substring(1).toLowerCase());
-            })
+            .map((word: string): string => this.ucfirst(word[0] + word.substring(1).toLowerCase()))
             .join(' ');
     }
 
@@ -1734,8 +1744,8 @@ class Str {
         let parts: string[] = value.split(' ');
 
         parts = parts.length > 1
-            ? parts.map((part: string) => this.title(part))
-            : this.ucsplit(parts.join('_')).map((part: string) => this.title(part));
+            ? parts.map((part: string): string => this.title(part))
+            : this.ucsplit(parts.join('_')).map((part: string): string => this.title(part));
 
         let collapsed: string = this.replace(['-', '_', ' '], '_', parts.join('_'));
 
@@ -1767,13 +1777,13 @@ class Str {
 
         words[0] = (words[0] as string).charAt(0).toUpperCase() + (words[0] as string).slice(1).toLowerCase();
 
-        for (let i = 0; i < words.length; i++) {
+        for (let i: number = 0; i < words.length; i++) {
             let lowercaseWord: string = (words[i] as string).toLowerCase();
 
             if (lowercaseWord.includes('-')) {
                 let hyphenatedWords: string[] = lowercaseWord.split('-');
 
-                hyphenatedWords = hyphenatedWords.map((part: string) =>
+                hyphenatedWords = hyphenatedWords.map((part: string): string =>
                     (minorWords.includes(part) && part.length <= 3) ? part : this.ucfirst(part)
                 );
 
@@ -2391,7 +2401,7 @@ class Str {
             return this.replaceStart(' ', '', value);
         }
 
-        charlist.split('').forEach((chararacter: string) => value = this.replaceStart(chararacter, '', value));
+        charlist.split('').forEach((character: string): string => value = this.replaceStart(character, '', value));
 
         return value;
     }
@@ -2417,7 +2427,7 @@ class Str {
             return this.replaceEnd(' ', '', value);
         }
 
-        charlist.split('').forEach((chararacter: string) => value = this.replaceEnd(chararacter, '', value));
+        charlist.split('').forEach((character: string): string => value = this.replaceEnd(character, '', value));
 
         return value;
     }
@@ -2437,7 +2447,7 @@ class Str {
      * Determine if a given string starts with a given substring.
      *
      * @param { string } haystack
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      *
      * @return { boolean }
      */
@@ -2448,13 +2458,25 @@ class Str {
             needles = [needles];
         }
 
-        needles.forEach((needle: string) => {
+        needles.forEach((needle: string): void => {
             if (needle !== '' && haystack.startsWith(needle)) {
                 result = true;
             }
         });
 
         return result;
+    }
+
+    /**
+     * Determine if a given string doesn't start with a given substring.
+     *
+     * @param { string } haystack
+     * @param { string | string[] } needles
+     *
+     * @return { boolean }
+     */
+    static doesntStartWith(haystack: string, needles: string | string[]): boolean {
+        return !this.startsWith(haystack, needles);
     }
 
     /**
@@ -2467,7 +2489,7 @@ class Str {
     static studly(value: string): string {
         const words: string[] = this.replace(['-', '_'], ' ', value).split(' ');
 
-        const studlyWords: string[] = words.map((word: string) => this.ucfirst(word));
+        const studlyWords: string[] = words.map((word: string): string => this.ucfirst(word));
 
         return studlyWords.join('');
     }
@@ -2629,7 +2651,7 @@ class Str {
      *
      * @param { string } string
      *
-     * @return { array }
+     * @return { string[] }
      */
     static ucsplit(string: string): string[] {
         return string.split(new RegExp(/(?=\p{Lu})/u));
@@ -2659,7 +2681,7 @@ class Str {
     static wordWrap(string: string, characters: number = 75, breakStr: string = '\n', cutLongWords: boolean = false): string {
         const breakWithSpace: string = cutLongWords ? breakStr + '\u00ad' : breakStr;
         const regex: RegExp = new RegExp(`.{1,${characters}}`, 'g');
-        const result: string = string.replace(regex, (substr: string) => substr.trim() + breakWithSpace);
+        const result: string = string.replace(regex, (substr: string): string => substr.trim() + breakWithSpace);
 
         return this.replaceLast(breakStr, '', result);
     }
@@ -2725,7 +2747,7 @@ class Str {
 
         let result: string = '';
 
-        for (let i = 0; i < 16; i++) {
+        for (let i: number = 0; i < 16; i++) {
             result += digits.charAt(bytes[i]! >>> 4);
             result += digits.charAt(bytes[i]! & 0xf);
 
@@ -2845,7 +2867,7 @@ class Stringable {
      *
      * @param { string } search
      *
-     * @return { this }
+     * @return { Stringable }
      */
     after(search: string): Stringable {
         return new Stringable(Str.after(this.#value, search));
@@ -2856,7 +2878,7 @@ class Stringable {
      *
      * @param { string } search
      *
-     * @return { this }
+     * @return { Stringable }
      */
     afterLast(search: string): Stringable {
         return new Stringable(Str.afterLast(this.#value, search));
@@ -2867,7 +2889,7 @@ class Stringable {
      *
      * @param { string | string[] } values
      *
-     * @return { this }
+     * @return { Stringable }
      */
     append(...values: string[]): Stringable {
         return new Stringable(this.#value + values.join(''));
@@ -2878,7 +2900,7 @@ class Stringable {
      *
      * @param { number } count
      *
-     * @return { this }
+     * @return { Stringable }
      */
     newLine(count: number = 1): Stringable {
         return this.append('\n'.repeat(count));
@@ -2887,7 +2909,7 @@ class Stringable {
     /**
      * Transliterate a UTF-8 value to ASCII.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     ascii(): Stringable {
         return new Stringable(Str.ascii(this.#value));
@@ -2898,7 +2920,7 @@ class Stringable {
      *
      * @param { string } suffix
      *
-     * @return { this }
+     * @return { Stringable }
      */
     basename(suffix: string = ''): Stringable {
         let basename: string = this.#value;
@@ -2934,7 +2956,7 @@ class Stringable {
      *
      * @param { string | string[] }  needle
      *
-     * @return { this }
+     * @return { Stringable }
      */
     chopStart(needle: string | string[]): Stringable {
         return new Stringable(Str.chopStart(this.#value, needle));
@@ -2945,7 +2967,7 @@ class Stringable {
      *
      * @param { string | string[] }  needle
      *
-     * @return { this }
+     * @return { Stringable }
      */
     chopEnd(needle: string | string[]): Stringable {
         return new Stringable(Str.chopEnd(this.#value, needle));
@@ -2954,7 +2976,7 @@ class Stringable {
     /**
      * Get the basename of the class path.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     classBasename(): Stringable {
         return this.basename();
@@ -2965,7 +2987,7 @@ class Stringable {
      *
      * @param { string } search
      *
-     * @return { this }
+     * @return { Stringable }
      */
     before(search: string): Stringable {
         return new Stringable(Str.before(this.#value, search));
@@ -2976,7 +2998,7 @@ class Stringable {
      *
      * @param { string } search
      *
-     * @return { this }
+     * @return { Stringable }
      */
     beforeLast(search: string): Stringable {
         return new Stringable(Str.beforeLast(this.#value, search));
@@ -2988,7 +3010,7 @@ class Stringable {
      * @param { string } from
      * @param { string } to
      *
-     * @return { this }
+     * @return { Stringable }
      */
     between(from: string, to: string): Stringable {
         return new Stringable(Str.between(this.#value, from, to));
@@ -3000,7 +3022,7 @@ class Stringable {
      * @param { string } from
      * @param { string } to
      *
-     * @return { this }
+     * @return { Stringable }
      */
     betweenFirst(from: string, to: string): Stringable {
         return new Stringable(Str.betweenFirst(this.#value, from, to));
@@ -3009,7 +3031,7 @@ class Stringable {
     /**
      * Convert a value to camel case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     camel(): Stringable {
         return new Stringable(Str.camel(this.#value));
@@ -3018,7 +3040,7 @@ class Stringable {
     /**
      * Determine if a given string contains a given substring.
      *
-     * @param  { string | array } needles
+     * @param  { string | string[] } needles
      * @param  { boolean } ignoreCase
      *
      * @return { boolean }
@@ -3030,7 +3052,7 @@ class Stringable {
     /**
      * Determine if a given string contains all array values.
      *
-     * @param { array } needles
+     * @param { string[] } needles
      * @param { boolean } ignoreCase
      *
      * @return { boolean }
@@ -3042,7 +3064,7 @@ class Stringable {
     /**
      * Determine if a given string doesn't contain a given substring.
      *
-     * @param  { string | array } needles
+     * @param  { string | string[] } needles
      * @param  { boolean } ignoreCase
      *
      * @return { boolean }
@@ -3056,7 +3078,7 @@ class Stringable {
      *
      * @param { Mode | number } mode
      *
-     * @return { this }
+     * @return { Stringable }
      */
     convertCase(mode: Mode | number = Mode.MB_CASE_FOLD): Stringable {
         return new Stringable(Str.convertCase(this.#value, mode));
@@ -3078,7 +3100,7 @@ class Stringable {
      *
      * @param { number } levels
      *
-     * @return { this }
+     * @return { Stringable }
      */
     dirname(levels: number = 1): Stringable {
         let dirname: string = this.#value;
@@ -3114,12 +3136,23 @@ class Stringable {
     /**
      * Determine if a given string ends with a given substring.
      *
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      *
      * @return { boolean }
      */
     endsWith(needles: string | string[]): boolean {
         return Str.endsWith(this.#value, needles);
+    }
+
+    /**
+     * Determine if a given string doesn't end with a given substring.
+     *
+     * @param { string | string[] } needles
+     *
+     * @return { boolean }
+     */
+    doesntEndWith(needles: string | string[]): boolean {
+        return !this.endsWith(needles);
     }
 
     /**
@@ -3155,7 +3188,7 @@ class Stringable {
      * @param { string } delimiter
      * @param { number } limit
      *
-     * @return { array }
+     * @return { string[] }
      */
     explode(delimiter: string, limit: number = 0): string[] {
         let wordsArray: string[] = this.#value.split(delimiter);
@@ -3175,7 +3208,7 @@ class Stringable {
      * @param { string } pattern
      * @param { number } limit
      *
-     * @return { array }
+     * @return { string[] }
      */
     split(pattern: string, limit: number = -1): string[] {
         const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
@@ -3192,7 +3225,7 @@ class Stringable {
             segments = [...segments.slice(0, position), segments.splice(position).join('')];
         }
 
-        return segments.map((segment: string) => segment.trim()) ?? [];
+        return segments.map((segment: string): string => segment.trim()) ?? [];
     }
 
     /**
@@ -3200,7 +3233,7 @@ class Stringable {
      *
      * @param { string } cap
      *
-     * @return { this }
+     * @return { Stringable }
      */
     finish(cap: string): Stringable {
         return new Stringable(Str.finish(this.#value, cap));
@@ -3209,7 +3242,7 @@ class Stringable {
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | array } pattern
+     * @param { string | string[] } pattern
      * @param { boolean } ignoreCase
      *
      * @return { boolean }
@@ -3284,7 +3317,7 @@ class Stringable {
     /**
      * Convert a string to kebab case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     kebab(): Stringable {
         return new Stringable(Str.kebab(this.#value));
@@ -3306,7 +3339,7 @@ class Stringable {
      * @param { string } end
      * @param { boolean } preserveWords
      *
-     * @return { this }
+     * @return { Stringable }
      */
     limit(limit: number = 100, end: string = '...', preserveWords: boolean = false): Stringable {
         return new Stringable(Str.limit(this.#value, limit, end, preserveWords));
@@ -3315,7 +3348,7 @@ class Stringable {
     /**
      * Convert the given string to lower-case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     lower(): Stringable {
         return new Stringable(Str.lower(this.#value));
@@ -3328,7 +3361,7 @@ class Stringable {
      * @param { number } index
      * @param { number | null }length
      *
-     * @return { this }
+     * @return { Stringable }
      */
     mask(character: string, index: number, length: number | null = null): Stringable {
         return new Stringable(Str.mask(this.#value, character, index, length));
@@ -3339,7 +3372,7 @@ class Stringable {
      *
      * @param { string } pattern
      *
-     * @return { this }
+     * @return { Stringable }
      */
     match(pattern: string): Stringable {
         return new Stringable(Str.match(pattern, this.#value));
@@ -3361,7 +3394,7 @@ class Stringable {
      *
      * @param { string } pattern
      *
-     * @return { array }
+     * @return { string[] }
      */
     matchAll(pattern: string): string[] {
         return Str.matchAll(pattern, this.#value);
@@ -3381,7 +3414,7 @@ class Stringable {
     /**
      * Remove all non-numeric characters from a string.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     numbers(): Stringable {
         return new Stringable(Str.numbers(this.#value));
@@ -3393,7 +3426,7 @@ class Stringable {
      * @param { number } length
      * @param { string } pad
      *
-     * @return { this }
+     * @return { Stringable }
      */
     padBoth(length: number, pad: string = ' '): Stringable {
         return new Stringable(Str.padBoth(this.#value, length, pad));
@@ -3405,7 +3438,7 @@ class Stringable {
      * @param { number } length
      * @param { string } pad
      *
-     * @return { this }
+     * @return { Stringable }
      */
     padLeft(length: number, pad: string = ' '): Stringable {
         return new Stringable(Str.padLeft(this.#value, length, pad));
@@ -3417,7 +3450,7 @@ class Stringable {
      * @param { number } length
      * @param { string } pad
      *
-     * @return { this }
+     * @return { Stringable }
      */
     padRight(length: number, pad: string = ' '): Stringable {
         return new Stringable(Str.padRight(this.#value, length, pad));
@@ -3428,7 +3461,7 @@ class Stringable {
      *
      * @param { string | function } callback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     pipe(callback: string | Function): Stringable {
         // @ts-ignore
@@ -3452,7 +3485,7 @@ class Stringable {
      *
      * @param { number } count
      *
-     * @return { this }
+     * @return { Stringable }
      */
     plural(count: number = 2): Stringable {
         return new Stringable(Str.plural(this.#value, count));
@@ -3463,7 +3496,7 @@ class Stringable {
      *
      * @param { number } count
      *
-     * @return { this }
+     * @return { Stringable }
      */
     pluralStudly(count: number = 2): Stringable {
         return new Stringable(Str.pluralStudly(this.#value, count));
@@ -3474,7 +3507,7 @@ class Stringable {
      *
      * @param { number } count
      *
-     * @return { this }
+     * @return { Stringable }
      */
     pluralPascal(count: number = 2): Stringable {
         return new Stringable(Str.pluralPascal(this.#value, count));
@@ -3497,7 +3530,7 @@ class Stringable {
      *
      * @param { string | string[] } values
      *
-     * @return { this }
+     * @return { Stringable }
      */
     prepend(...values: string[]): Stringable {
         return new Stringable(values.join('') + this.#value);
@@ -3509,7 +3542,7 @@ class Stringable {
      * @param { string } search
      * @param { boolean } caseSensitive
      *
-     * @return { this }
+     * @return { Stringable }
      */
     remove(search: string, caseSensitive: boolean = true): Stringable {
         return new Stringable(Str.remove(search, this.#value, caseSensitive));
@@ -3518,7 +3551,7 @@ class Stringable {
     /**
      * Reverse the string.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     reverse(): Stringable {
         return new Stringable(Str.reverse(this.#value));
@@ -3529,7 +3562,7 @@ class Stringable {
      *
      * @param { number } times
      *
-     * @return { this }
+     * @return { Stringable }
      */
     repeat(times: number): Stringable {
         return new Stringable(Str.repeat(this.#value, times));
@@ -3538,11 +3571,11 @@ class Stringable {
     /**
      * Replace the given value in the given string.
      *
-     * @param { string | array } search
+     * @param { string | string[] } search
      * @param { string } replace
      * @param { boolean } caseSensitive
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replace(search: string | string[], replace: string, caseSensitive: boolean = true): Stringable {
         return new Stringable(Str.replace(search, replace, this.#value, caseSensitive));
@@ -3552,9 +3585,9 @@ class Stringable {
      * Replace a given value in the string sequentially with an array.
      *
      * @param { string } search
-     * @param { array } replace
+     * @param { string[] } replace
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replaceArray(search: string, replace: string[]): Stringable {
         return new Stringable(Str.replaceArray(search, replace, this.#value));
@@ -3566,7 +3599,7 @@ class Stringable {
      * @param { string } search
      * @param { string } replace
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replaceFirst(search: string, replace: string): Stringable {
         return new Stringable(Str.replaceFirst(search, replace, this.#value));
@@ -3578,7 +3611,7 @@ class Stringable {
      * @param { string } search
      * @param { string } replace
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replaceStart(search: string, replace: string): Stringable {
         return new Stringable(Str.replaceStart(search, replace, this.#value));
@@ -3590,7 +3623,7 @@ class Stringable {
      * @param { string } search
      * @param { string } replace
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replaceLast(search: string, replace: string): Stringable {
         return new Stringable(Str.replaceLast(search, replace, this.#value));
@@ -3602,7 +3635,7 @@ class Stringable {
      * @param { string } search
      * @param { string } replace
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replaceEnd(search: string, replace: string): Stringable {
         return new Stringable(Str.replaceEnd(search, replace, this.#value));
@@ -3614,7 +3647,7 @@ class Stringable {
      * @param { string } pattern
      * @param { string | function } replace
      *
-     * @return { this }
+     * @return { Stringable }
      */
     replaceMatches(pattern: string, replace: string | Function): Stringable {
         const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
@@ -3622,8 +3655,7 @@ class Stringable {
         const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
 
         if (replace instanceof Function) {
-            // @ts-ignore
-            this.#value.replace(expression, (matched) => matched);
+            this.#value.replace(expression, (matched: string): string => matched);
         }
 
         return new Stringable(this.#value.replace(expression, (replace as string)));
@@ -3632,7 +3664,7 @@ class Stringable {
     /**
      * Remove all "extra" blank space from the given string.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     squish(): Stringable {
         return new Stringable(Str.squish(this.#value));
@@ -3643,7 +3675,7 @@ class Stringable {
      *
      * @param { string } prefix
      *
-     * @return { this }
+     * @return { Stringable }
      */
     start(prefix: string): Stringable {
         return new Stringable(Str.start(this.#value, prefix));
@@ -3652,7 +3684,7 @@ class Stringable {
     /**
      * Convert the given string to upper-case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     upper(): Stringable {
         return new Stringable(Str.upper(this.#value));
@@ -3661,7 +3693,7 @@ class Stringable {
     /**
      * Convert the given string to title case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     title(): Stringable {
         return new Stringable(Str.title(this.#value));
@@ -3670,7 +3702,7 @@ class Stringable {
     /**
      * Convert the given string to title case for each word.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     headline(): Stringable {
         return new Stringable(Str.headline(this.#value));
@@ -3681,7 +3713,7 @@ class Stringable {
      *
      * @see https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
      *
-     * @return { this }
+     * @return { Stringable }
      */
     apa(): Stringable {
         return new Stringable(Str.apa(this.#value));
@@ -3690,7 +3722,7 @@ class Stringable {
     /**
      * Get the singular form of an English word.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     singular(): Stringable {
         return new Stringable(Str.singular(this.#value));
@@ -3702,7 +3734,7 @@ class Stringable {
      * @param { string } separator
      * @param { object } dictionary
      *
-     * @return { this }
+     * @return { Stringable }
      */
     slug(separator: string = '-', dictionary: { [key: string]: string } = { '@': 'at' }): Stringable {
         return new Stringable(Str.slug(this.#value, separator, dictionary));
@@ -3713,7 +3745,7 @@ class Stringable {
      *
      * @param { string } delimiter
      *
-     * @return { this }
+     * @return { Stringable }
      */
     snake(delimiter: string = '_'): Stringable {
         return new Stringable(Str.snake(this.#value, delimiter));
@@ -3722,7 +3754,7 @@ class Stringable {
     /**
      * Determine if a given string starts with a given substring.
      *
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      *
      * @return { boolean }
      */
@@ -3731,9 +3763,20 @@ class Stringable {
     }
 
     /**
+     * Determine if a given string doesn't start with a given substring.
+     *
+     * @param { string | string[] } needles
+     *
+     * @return { boolean }
+     */
+    doesntStartWith(needles: string | string[]): boolean {
+        return Str.doesntStartWith(this.#value, needles);
+    }
+
+    /**
      * Convert a value to studly caps case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     studly(): Stringable {
         return new Stringable(Str.studly(this.#value));
@@ -3742,7 +3785,7 @@ class Stringable {
     /**
      * Convert a value to Pascal case.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     pascal(): Stringable {
         return new Stringable(Str.pascal(this.#value));
@@ -3754,7 +3797,7 @@ class Stringable {
      * @param { number } start
      * @param { number | null } length
      *
-     * @return { this }
+     * @return { Stringable }
      */
     substr(start: number, length: number | null = null): Stringable {
         return new Stringable(Str.substr(this.#value, start, length));
@@ -3780,7 +3823,7 @@ class Stringable {
      * @param { number } offset
      * @param { number | null } length
      *
-     * @return { this }
+     * @return { Stringable }
      */
     substrReplace(replace: string, offset: number = 0, length: number | null = null): Stringable {
         return new Stringable(Str.substrReplace(this.#value, replace, offset, length));
@@ -3791,7 +3834,7 @@ class Stringable {
      *
      * @param { object } map
      *
-     * @return { this }
+     * @return { Stringable }
      */
     swap(map: { [key: string]: string }): Stringable {
         return new Stringable(Str.swap(map, this.#value));
@@ -3802,7 +3845,7 @@ class Stringable {
      *
      * @param { number } limit
      *
-     * @return { this }
+     * @return { Stringable }
      */
     take(limit: number): Stringable {
         if (limit < 0) {
@@ -3817,7 +3860,7 @@ class Stringable {
      *
      * @param { Function } callback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     tap(callback: Function): this {
         callback(this);
@@ -3830,7 +3873,7 @@ class Stringable {
      *
      * @param { string | string[]|null } characters
      *
-     * @return { this }
+     * @return { Stringable }
      */
     trim(characters: CharacterType = null): Stringable {
         let characterArray = characters instanceof Array
@@ -3849,7 +3892,7 @@ class Stringable {
      *
      * @param { string | string[]|null } characters
      *
-     * @return { this }
+     * @return { Stringable }
      */
     ltrim(characters: CharacterType = null): Stringable {
         let characterArray = characters instanceof Array
@@ -3868,7 +3911,7 @@ class Stringable {
      *
      * @param { string | string[]|null } characters
      *
-     * @return { this }
+     * @return { Stringable }
      */
     rtrim(characters: CharacterType = null): Stringable {
         let characterArray = characters instanceof Array
@@ -3885,7 +3928,7 @@ class Stringable {
     /**
      * Make a string's first character lowercase.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     lcfirst(): Stringable {
         return new Stringable(Str.lcfirst(this.#value));
@@ -3894,7 +3937,7 @@ class Stringable {
     /**
      * Make a string's first character uppercase.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     ucfirst(): Stringable {
         return new Stringable(Str.ucfirst(this.#value));
@@ -3903,7 +3946,7 @@ class Stringable {
     /**
      * Split a string by uppercase characters.
      *
-     * @return { array }
+     * @return { string[] }
      */
     ucsplit(): string[] {
         return Str.ucsplit(this.#value);
@@ -3916,7 +3959,7 @@ class Stringable {
      * @param { Function } callback
      * @param { Function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     when(value: boolean | Function, callback: Function, fallback: Function | null = null): this {
         value = value instanceof Function ? value(this) : value;
@@ -3938,7 +3981,7 @@ class Stringable {
      * @param { Function } callback
      * @param { Function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     unless(value: boolean | Function, callback: Function, fallback: Function | null = null): this {
         value = value instanceof Function ? value(this) : value;
@@ -3955,11 +3998,11 @@ class Stringable {
     /**
      * Execute the given callback if the string contains a given substring.
      *
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenContains(needles: string | string[], callback: Function, fallback: Function | null = null): this {
         return this.when(this.contains(needles), callback, fallback);
@@ -3968,11 +4011,11 @@ class Stringable {
     /**
      * Execute the given callback if the string contains all array values.
      *
-     * @param { array } needles
+     * @param { string[] } needles
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenContainsAll(needles: string[], callback: Function, fallback: Function | null = null): this {
         return this.when(this.containsAll(needles), callback, fallback);
@@ -3984,7 +4027,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenEmpty(callback: Function, fallback: Function | null = null): this {
         return this.when(this.isEmpty(), callback, fallback);
@@ -3996,7 +4039,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenNotEmpty(callback: Function, fallback: Function | null = null): this {
         return this.when(this.isNotEmpty(), callback, fallback);
@@ -4005,11 +4048,11 @@ class Stringable {
     /**
      * Execute the given callback if the string ends with a given substring.
      *
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenEndsWith(needles: string | string[], callback: Function, fallback: Function | null = null): this {
         return this.when(this.endsWith(needles), callback, fallback);
@@ -4022,7 +4065,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenExactly(value: string, callback: Function, fallback: Function | null = null): this {
         return this.when(this.exactly(value), callback, fallback);
@@ -4035,7 +4078,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenNotExactly(value: string, callback: Function, fallback: Function | null = null): this {
         return this.when(!this.exactly(value), callback, fallback);
@@ -4044,11 +4087,11 @@ class Stringable {
     /**
      * Execute the given callback if the string matches a given pattern.
      *
-     * @param { string | array } pattern
+     * @param { string | string[] } pattern
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenIs(pattern: string | string[], callback: Function, fallback: Function | null = null): this {
         return this.when(this.is(pattern), callback, fallback);
@@ -4060,7 +4103,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenIsAscii(callback: Function, fallback: Function | null = null): this {
         return this.when(this.isAscii(), callback, fallback);
@@ -4072,7 +4115,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenIsUuid(callback: Function, fallback: Function | null = null): this {
         return this.when(this.isUuid(), callback, fallback);
@@ -4084,7 +4127,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenIsUlid(callback: Function, fallback: Function | null = null): this {
         return this.when(this.isUlid(), callback, fallback);
@@ -4093,11 +4136,11 @@ class Stringable {
     /**
      * Execute the given callback if the string starts with a given substring.
      *
-     * @param { string | array } needles
+     * @param { string | string[] } needles
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenStartsWith(needles: string | string[], callback: Function, fallback: Function | null = null): this {
         return this.when(this.startsWith(needles), callback, fallback);
@@ -4110,7 +4153,7 @@ class Stringable {
      * @param { function } callback
      * @param { function|null } fallback
      *
-     * @return { this }
+     * @return { Stringable }
      */
     whenTest(pattern: string, callback: Function, fallback: Function | null = null): this {
         return this.when(this.test(pattern), callback, fallback);
@@ -4122,7 +4165,7 @@ class Stringable {
      * @param { number } words
      * @param { string } end
      *
-     * @return { this }
+     * @return { Stringable }
      */
     words(words: number = 100, end: string = '...'): Stringable {
         return new Stringable(Str.words(this.#value, words, end));
@@ -4156,7 +4199,7 @@ class Stringable {
      * @param { string } before
      * @param { string | null } after
      *
-     * @return { this }
+     * @return { Stringable }
      */
     wrap(before: string, after: string | null = null): Stringable {
         return new Stringable(Str.wrap(this.#value, before, after));
@@ -4168,7 +4211,7 @@ class Stringable {
      * @param { string } before
      * @param { string | null } after
      *
-     * @return { this }
+     * @return { Stringable }
      */
     unwrap(before: string, after: string | null = null): Stringable {
         return new Stringable(Str.unwrap(this.#value, before, after));
@@ -4186,7 +4229,7 @@ class Stringable {
     /**
      * Convert the string to Base64 encoding.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     toBase64(): Stringable {
         return new Stringable(Str.toBase64(this.#value));
@@ -4195,7 +4238,7 @@ class Stringable {
     /**
      * Decode the Base64 encoded string.
      *
-     * @return { this }
+     * @return { Stringable }
      */
     fromBase64(): Stringable {
         return new Stringable(Str.fromBase64(this.#value));
@@ -4825,7 +4868,7 @@ function preg_quote(string: string, delimiter: string | null = null): string {
  * @return { string } String the modified string.
  */
 function ucwords(string: string, separators: string = ' \t\r\n\f\v'): string {
-    return string.split(separators).map((word: string) => word[0]?.toUpperCase() + word.substring(1)).join(' ');
+    return string.split(separators).map((word: string): string => word[0]?.toUpperCase() + word.substring(1)).join(' ');
 }
 
 /**
@@ -4837,11 +4880,11 @@ function ucwords(string: string, separators: string = ' \t\r\n\f\v'): string {
  * @return { string }
  */
 function matchCase(value: string, comparison: string): string {
-    const cases: ((str: string) => string)[] = [
-        str => str.toLowerCase(),
-        str => str.toUpperCase(),
-        str => str.charAt(0).toUpperCase() + str.slice(1),
-        str => str.replace(/\b\w/g, char => char.toUpperCase())
+    const cases: ((string: string) => string)[] = [
+        (string: string): string => string.toLowerCase(),
+        (string: string): string => string.toUpperCase(),
+        (string: string): string => string.charAt(0).toUpperCase() + string.slice(1),
+        (string: string): string => string.replace(/\b\w/g, (char: string): string => char.toUpperCase())
     ];
 
     for (const matcher of cases) {
@@ -4860,7 +4903,6 @@ if (typeof exports != 'undefined') {
     module.exports.str = str;
 }
 
-// Hack to test this code, global is not available in the browser.
 if (typeof global !== 'undefined') {
     const _global: any = global;
 

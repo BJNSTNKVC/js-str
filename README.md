@@ -317,9 +317,9 @@ Str.deduplicate('The---Laravel---Framework', '-')
 You can also pass an array of characters to replace consecutive instances of:
 
 ```js
-Str.deduplicate(' Laravell Frramework ', [' ', 'l', 'r'])
+Str.deduplicate('Thee---Laravell---Frramework', ['-', 'e', 'l', 'r'])
 
-//  Laravell Frramework
+// The-Laravel-Frramework
 ```
 
 #### Str.endsWith()
@@ -332,6 +332,12 @@ Str.endsWith('This is my name', 'name');
 // true
 ```
 
+```js
+Str.endsWith('This is my name', 'names');
+
+// false
+```
+
 You may also pass an array of values to determine if the given string ends with any of the values in the array:
 
 ```js
@@ -341,7 +347,37 @@ Str.endsWith('This is my name', ['name', 'foo']);
 ```
 
 ```js
-Str.endsWith('This is my name', ['this', 'foo']);
+Str.endsWith('This is my name', ['names', 'foo']);
+
+// false
+```
+
+#### Str.doesntEndWith()
+
+The `Str.doesntEndWith` method determines if the given string doesn't end with a given substring:
+
+```js
+Str.doesntEndWith('This is my name', 'names');
+
+// true
+```
+
+```js
+Str.doesntEndWith('This is my name', 'name')
+
+// false
+```
+
+You may also pass an array of values to determine if the given string ends with any of the values in the array:
+
+```js
+Str.doesntEndWith('This is my name', ['names', 'foo']);
+
+// true
+```
+
+```js
+Str.doesntEndWith('This is my name', ['name', 'foo']);
 
 // false
 ```
@@ -1048,12 +1084,54 @@ Str.startsWith('This is my name', 'This');
 // true
 ```
 
+```js
+Str.startsWith('This is my name', 'There');
+
+// false
+```
+
 If an array of possible values is passed, the startsWith method will return true if the string begins with any of the given values:
 
 ```js
 Str.startsWith('This is my name', ['This', 'That', 'There']);
 
 // true
+```
+
+```js
+Str.startsWith('This is my name', ['That', 'There']);
+
+// false
+```
+
+#### Str.doesntStartWith()
+
+The `Str.doesntStartWith` method determines if the given string begins with the given value:
+
+```js
+Str.startsWith('This is my name', 'This');
+
+// true
+```
+
+```js
+Str.startsWith('This is my name', 'There');
+
+// false
+```
+
+If an array of possible values is passed, the startsWith method will return true if the string begins with any of the given values:
+
+```js
+Str.startsWith('This is my name', ['This', 'That', 'There']);
+
+// true
+```
+
+```js
+Str.startsWith('This is my name', ['That', 'There']);
+
+// false
 ```
 
 #### Str.studly()
@@ -1614,7 +1692,7 @@ Str.of('The   Laravel   Framework').deduplicate()
 ```
 
 ```js
-Str.of('The---Laravel---Framework', '-').deduplicate()
+Str.of('The---Laravel---Framework').deduplicate('-')
 
 // The-Laravel-Framework
 ```
@@ -1622,10 +1700,11 @@ Str.of('The---Laravel---Framework', '-').deduplicate()
 You can also pass an array of characters to replace consecutive instances of:
 
 ```js
-Str.of(' Laravell Frramework ').deduplicate([' ', 'l', 'r'])
+Str.of('Thee---Laravell---Frramework').deduplicate(['-', 'e', 'l', 'r'])
 
-//  Laravell Frramework
+// The-Laravel-Frramework
 ```
+
 #### dirname
 
 The `dirname` method return the parent directory portion of the given string:
