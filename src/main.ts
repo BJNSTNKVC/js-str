@@ -1,8 +1,12 @@
-type CharacterType = string | string[] | null;
-
 type HtmlStringType = HTMLElement | Node | string;
 
 type ExcerptOptions = { radius?: number, omission?: string }
+
+type Value<T> = boolean | ((instance: T) => boolean);
+
+type Callback<T> = (instance: T, value: boolean) => T | void | undefined;
+
+type Fallback<T> = Callback<T> | null;
 
 enum Mode {
     MB_CASE_UPPER        = 0,
@@ -401,7 +405,7 @@ class Str {
      *
      * @param { string } text
      * @param { string } phrase
-     * @param { object } options
+     * @param { ExcerptOptions } options
      *
      * @return { string | null }
      */
@@ -503,7 +507,7 @@ class Str {
                 return true;
             }
 
-            pattern = pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/\\\*/g, '.*');
+            pattern = pattern.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/\\\*/g, '.*');
 
             const regex: RegExp = new RegExp('^' + pattern + '$', ignoreCase ? 'iu' : 'u');
 
@@ -536,7 +540,7 @@ class Str {
     static isJson(value: string): boolean {
         try {
             JSON.parse(value);
-        } catch (JsonException) {
+        } catch {
             return false;
         }
 
@@ -808,7 +812,7 @@ class Str {
      * @return { string }
      */
     static numbers(value: string): string {
-        return value.replace(/[^0-9]/g, '');
+        return value.replace(/\D/g, '');
     }
 
     /**
@@ -1531,7 +1535,7 @@ class Str {
             }
 
             return result;
-        } catch (e) {
+        } catch {
             return fallback;
         }
     }
@@ -2356,26 +2360,26 @@ class Str {
      * Remove all whitespace from both ends of a string.
      *
      * @param { string } value
-     * @param { string | null } charlist
+     * @param { string | null } characters
      *
      * @return { string }
      */
-    static trim(value: string, charlist: string | null = null): string {
-        if (charlist === null) {
+    static trim(value: string, characters: string | null = null): string {
+        if (characters === null) {
             return value.trim();
         }
 
-        if (charlist === '') {
+        if (characters === '') {
             return value;
         }
 
-        if (charlist === ' ') {
+        if (characters === ' ') {
             return value.replaceAll(' ', '');
         }
 
-        charlist = charlist.split('').join('|');
+        characters = characters.split('').join('|');
 
-        const regex: RegExp = new RegExp(`${charlist}+`, 'g');
+        const regex: RegExp = new RegExp(`${characters}+`, 'g');
 
         return value.replace(regex, '') ?? value;
     }
@@ -2384,24 +2388,24 @@ class Str {
      * Remove all whitespace from the beginning of a string.
      *
      * @param { string } value
-     * @param { string | null } charlist
+     * @param { string | null } characters
      *
      * @return { string }
      */
-    static ltrim(value: string, charlist: string | null = null): string {
-        if (charlist === null) {
+    static ltrim(value: string, characters: string | null = null): string {
+        if (characters === null) {
             return value.trimStart();
         }
 
-        if (charlist === '') {
+        if (characters === '') {
             return value;
         }
 
-        if (charlist === ' ') {
+        if (characters === ' ') {
             return this.replaceStart(' ', '', value);
         }
 
-        charlist.split('').forEach((character: string): string => value = this.replaceStart(character, '', value));
+        characters.split('').forEach((character: string): string => value = this.replaceStart(character, '', value));
 
         return value;
     }
@@ -2410,24 +2414,24 @@ class Str {
      * Remove all whitespace from the end of a string.
      *
      * @param { string } value
-     * @param { string | null } charlist
+     * @param { string | null } characters
      *
      * @return { string }
      */
-    static rtrim(value: string, charlist: string | null = null): string {
-        if (charlist === null) {
+    static rtrim(value: string, characters: string | null = null): string {
+        if (characters === null) {
             return value.trimEnd();
         }
 
-        if (charlist === '') {
+        if (characters === '') {
             return value;
         }
 
-        if (charlist === ' ') {
+        if (characters === ' ') {
             return this.replaceEnd(' ', '', value);
         }
 
-        charlist.split('').forEach((character: string): string => value = this.replaceEnd(character, '', value));
+        characters.split('').forEach((character: string): string => value = this.replaceEnd(character, '', value));
 
         return value;
     }
@@ -2578,7 +2582,7 @@ class Str {
      *
      * @return { string }
      */
-    static swap(map: { [key: string]: string }, subject: string): string {
+    static swap(map: Record<string, string>, subject: string): string {
         for (const value in map) {
             subject = subject.replace(value, (map[value] as string));
         }
@@ -2851,7 +2855,7 @@ class Stringable {
      *
      * @type { string }
      */
-    #value: string;
+    readonly #value: string;
 
     /**
      * Create a new instance of the class.
@@ -3174,7 +3178,7 @@ class Stringable {
      * Extracts an excerpt from text that matches the first instance of a phrase.
      *
      * @param { string } phrase
-     * @param { object } options
+     * @param { ExcerptOptions } options
      *
      * @return { string | null }
      */
@@ -3871,20 +3875,12 @@ class Stringable {
     /**
      * Trim the string of the given characters.
      *
-     * @param { string | string[]|null } characters
+     * @param { string | null } characters
      *
      * @return { Stringable }
      */
-    trim(characters: CharacterType = null): Stringable {
-        let characterArray = characters instanceof Array
-            ? characters
-            : [...arguments];
-
-        characters = characterArray.filter(char => char.match('[^A-Za-z0-9_]') !== null);
-
-        characters.forEach(term => this.#value = this.#value.replaceAll(term, ''));
-
-        return new Stringable(this.#value.trim());
+    trim(characters: string | null = null): Stringable {
+        return new Stringable(Str.trim(this.#value, characters));
     }
 
     /**
@@ -3894,16 +3890,8 @@ class Stringable {
      *
      * @return { Stringable }
      */
-    ltrim(characters: CharacterType = null): Stringable {
-        let characterArray = characters instanceof Array
-            ? characters
-            : [...arguments];
-
-        characters = characterArray.filter(char => char.match('[^A-Za-z0-9_]') !== null);
-
-        characters.forEach(term => this.#value = Str.replaceFirst(term, '', this.#value));
-
-        return new Stringable(this.#value.trimStart());
+    ltrim(characters: string | null = null): Stringable {
+        return new Stringable(Str.ltrim(this.#value, characters));
     }
 
     /**
@@ -3913,16 +3901,8 @@ class Stringable {
      *
      * @return { Stringable }
      */
-    rtrim(characters: CharacterType = null): Stringable {
-        let characterArray = characters instanceof Array
-            ? characters
-            : [...arguments];
-
-        characters = characterArray.filter(char => char.match('[^A-Za-z0-9_]') !== null);
-
-        characters.forEach(term => this.#value = Str.replaceLast(term, '', this.#value));
-
-        return new Stringable(this.#value.trimEnd());
+    rtrim(characters: string | null = null): Stringable {
+        return new Stringable(Str.rtrim(this.#value, characters));
     }
 
     /**
@@ -3955,13 +3935,13 @@ class Stringable {
     /**
      * Apply the callback if the given "value" is (or resolves to) truthy.
      *
-     * @param { boolean|Function } value
-     * @param { Function } callback
-     * @param { Function|null } fallback
+     * @param { Value<this> } value
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
      * @return { Stringable }
      */
-    when(value: boolean | Function, callback: Function, fallback: Function | null = null): this {
+    when(value: Value<this>, callback: Callback<this>, fallback: Fallback<this> = null): this {
         value = value instanceof Function ? value(this) : value;
 
         if (value) {
@@ -3976,14 +3956,13 @@ class Stringable {
     /**
      * Apply the callback if the given "value" is (or resolves to) falsy.
      *
+     * @param { Value<this> } value
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @param { boolean|Function } value
-     * @param { Function } callback
-     * @param { Function|null } fallback
-     *
-     * @return { Stringable }
+     * @return { this }
      */
-    unless(value: boolean | Function, callback: Function, fallback: Function | null = null): this {
+    unless(value: Value<this>, callback: Callback<this>, fallback: Fallback<this> = null): this {
         value = value instanceof Function ? value(this) : value;
 
         if (!value) {
@@ -3999,12 +3978,12 @@ class Stringable {
      * Execute the given callback if the string contains a given substring.
      *
      * @param { string | string[] } needles
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenContains(needles: string | string[], callback: Function, fallback: Function | null = null): this {
+    whenContains(needles: string | string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.contains(needles), callback, fallback);
     }
 
@@ -4012,36 +3991,36 @@ class Stringable {
      * Execute the given callback if the string contains all array values.
      *
      * @param { string[] } needles
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenContainsAll(needles: string[], callback: Function, fallback: Function | null = null): this {
+    whenContainsAll(needles: string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.containsAll(needles), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string is empty.
      *
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenEmpty(callback: Function, fallback: Function | null = null): this {
+    whenEmpty(callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.isEmpty(), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string is not empty.
      *
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenNotEmpty(callback: Function, fallback: Function | null = null): this {
+    whenNotEmpty(callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.isNotEmpty(), callback, fallback);
     }
 
@@ -4049,25 +4028,38 @@ class Stringable {
      * Execute the given callback if the string ends with a given substring.
      *
      * @param { string | string[] } needles
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenEndsWith(needles: string | string[], callback: Function, fallback: Function | null = null): this {
+    whenEndsWith(needles: string | string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.endsWith(needles), callback, fallback);
+    }
+
+    /**
+     * Execute the given callback if the string doesn't end with a given substring.
+     *
+     * @param { string | string[] } needles
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
+     *
+     * @return { this }
+     */
+    whenDoesntEndWith(needles: string | string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
+        return this.when(this.doesntEndWith(needles), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string is an exact match with the given value.
      *
      * @param { string } value
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenExactly(value: string, callback: Function, fallback: Function | null = null): this {
+    whenExactly(value: string, callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.exactly(value), callback, fallback);
     }
 
@@ -4075,12 +4067,12 @@ class Stringable {
      * Execute the given callback if the string is not an exact match with the given value.
      *
      * @param { string } value
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenNotExactly(value: string, callback: Function, fallback: Function | null = null): this {
+    whenNotExactly(value: string, callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(!this.exactly(value), callback, fallback);
     }
 
@@ -4088,48 +4080,48 @@ class Stringable {
      * Execute the given callback if the string matches a given pattern.
      *
      * @param { string | string[] } pattern
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenIs(pattern: string | string[], callback: Function, fallback: Function | null = null): this {
+    whenIs(pattern: string | string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.is(pattern), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string is 7-bit ASCII.
      *
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenIsAscii(callback: Function, fallback: Function | null = null): this {
+    whenIsAscii(callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.isAscii(), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string is a valid UUID.
      *
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenIsUuid(callback: Function, fallback: Function | null = null): this {
+    whenIsUuid(callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.isUuid(), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string is a valid ULID.
      *
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenIsUlid(callback: Function, fallback: Function | null = null): this {
+    whenIsUlid(callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.isUlid(), callback, fallback);
     }
 
@@ -4137,25 +4129,38 @@ class Stringable {
      * Execute the given callback if the string starts with a given substring.
      *
      * @param { string | string[] } needles
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenStartsWith(needles: string | string[], callback: Function, fallback: Function | null = null): this {
+    whenStartsWith(needles: string | string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.startsWith(needles), callback, fallback);
+    }
+
+    /**
+     * Execute the given callback if the string doesn't start with a given substring.
+     *
+     * @param { string | string[] } needles
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
+     *
+     * @return { this }
+     */
+    whenDoesntStartWith(needles: string | string[], callback: Callback<this>, fallback: Fallback<this> = null): this {
+        return this.when(this.doesntStartWith(needles), callback, fallback);
     }
 
     /**
      * Execute the given callback if the string matches the given pattern.
      *
      * @param { string } pattern
-     * @param { function } callback
-     * @param { function|null } fallback
+     * @param { Callback<this> } callback
+     * @param { Fallback<this> } fallback
      *
-     * @return { Stringable }
+     * @return { this }
      */
-    whenTest(pattern: string, callback: Function, fallback: Function | null = null): this {
+    whenTest(pattern: string, callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.test(pattern), callback, fallback);
     }
 
@@ -4220,7 +4225,7 @@ class Stringable {
     /**
      * Convert the string into a `HtmlString` instance.
      *
-     * @return { HTMLElement | Node | string }
+     * @return { HtmlStringType }
      */
     toHtmlString(): HtmlStringType {
         return new HtmlString(this.#value).toHtml();
@@ -4727,7 +4732,7 @@ class HtmlString {
      *
      * @type { string }
      */
-    #html: string;
+    readonly #html: string;
 
     /**
      * Create a new HTML string instance.

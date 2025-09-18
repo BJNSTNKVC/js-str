@@ -303,13 +303,13 @@ Str.convertCase('HeLLo', Mode.MB_CASE_FOLD);
 The `Str.deduplicate` method replaces consecutive instances of a character with a single instance of that character in the given string. By default, the method deduplicates spaces:
 
 ```js
-Str.deduplicate('The   Laravel   Framework')
+Str.deduplicate('The   Laravel   Framework');
 
 //  The Laravel Framework 
 ```
 
 ```js
-Str.deduplicate('The---Laravel---Framework', '-')
+Str.deduplicate('The---Laravel---Framework', '-');
 
 // The-Laravel-Framework
 ```
@@ -317,7 +317,7 @@ Str.deduplicate('The---Laravel---Framework', '-')
 You can also pass an array of characters to replace consecutive instances of:
 
 ```js
-Str.deduplicate('Thee---Laravell---Frramework', ['-', 'e', 'l', 'r'])
+Str.deduplicate('Thee---Laravell---Frramework', ['-', 'e', 'l', 'r']);
 
 // The-Laravel-Frramework
 ```
@@ -363,12 +363,12 @@ Str.doesntEndWith('This is my name', 'names');
 ```
 
 ```js
-Str.doesntEndWith('This is my name', 'name')
+Str.doesntEndWith('This is my name', 'name');
 
 // false
 ```
 
-You may also pass an array of values to determine if the given string ends with any of the values in the array:
+You may also pass an array of values to determine if the given string doesn't end with any of the values in the array:
 
 ```js
 Str.doesntEndWith('This is my name', ['names', 'foo']);
@@ -700,13 +700,13 @@ Str.isMatch('/foo (.*)/', 'laravel');
 The `Str.numbers` method removes all non-numeric characters from a string:
 
 ```js
-Str.numbers('(555) 123-4567')
+Str.numbers('(555) 123-4567');
 
 // 5551234567
 ```
 
 ```js
-Str.numbers('L4r4v3l!')
+Str.numbers('L4r4v3l!');
 
 // 443
 ```
@@ -955,7 +955,7 @@ Str.replaceLast('the', 'a', 'the quick brown fox jumps over the lazy dog');
 The `Str.replaceMatches` method replaces all portions of a string matching a pattern with the given replacement string:
 
 ```js
-Str.replaceMatches('/[^A-Za-z0-9]+/', '', '(+1) 501-555-1000')
+Str.replaceMatches('/[^A-Za-z0-9]+/', '', '(+1) 501-555-1000');
 
 // '15015551000'
 ```
@@ -1090,7 +1090,7 @@ Str.startsWith('This is my name', 'There');
 // false
 ```
 
-If an array of possible values is passed, the startsWith method will return true if the string begins with any of the given values:
+You may also pass an array of values to determine if the given string begins with any of the values in the array:
 
 ```js
 Str.startsWith('This is my name', ['This', 'That', 'There']);
@@ -1106,30 +1106,30 @@ Str.startsWith('This is my name', ['That', 'There']);
 
 #### Str.doesntStartWith()
 
-The `Str.doesntStartWith` method determines if the given string begins with the given value:
+The `Str.doesntStartWith` method determines if the given string doesn't begin with the given value:
 
 ```js
-Str.startsWith('This is my name', 'This');
+Str.doesntStartWith('This is my name', 'There');
 
 // true
 ```
 
 ```js
-Str.startsWith('This is my name', 'There');
+Str.doesntStartWith('This is my name', 'This');
 
 // false
 ```
 
-If an array of possible values is passed, the startsWith method will return true if the string begins with any of the given values:
+You may also pass an array of values to determine if the given string doesn't begin with any of the values in the array:
 
 ```js
-Str.startsWith('This is my name', ['This', 'That', 'There']);
+Str.doesntStartWith('This is my name', ['There', 'foo']);
 
 // true
 ```
 
 ```js
-Str.startsWith('This is my name', ['That', 'There']);
+Str.doesntStartWith('This is my name', ['This', 'foo']);
 
 // false
 ```
@@ -1686,13 +1686,13 @@ Str.of('HeLLo').convertCase(Mode.MB_CASE_FOLD);
 The `deduplicate` method replaces consecutive instances of a character with a single instance of that character in the given string. By default, the method deduplicates spaces:
 
 ```js
-Str.of('The   Laravel   Framework').deduplicate()
+Str.of('The   Laravel   Framework').deduplicate();
 
 //  The Laravel Framework 
 ```
 
 ```js
-Str.of('The---Laravel---Framework').deduplicate('-')
+Str.of('The---Laravel---Framework').deduplicate('-');
 
 // The-Laravel-Framework
 ```
@@ -1700,7 +1700,7 @@ Str.of('The---Laravel---Framework').deduplicate('-')
 You can also pass an array of characters to replace consecutive instances of:
 
 ```js
-Str.of('Thee---Laravell---Frramework').deduplicate(['-', 'e', 'l', 'r'])
+Str.of('Thee---Laravell---Frramework').deduplicate(['-', 'e', 'l', 'r']);
 
 // The-Laravel-Frramework
 ```
@@ -1752,6 +1752,12 @@ Str.of('This is my name').endsWith('name');
 // true
 ```
 
+```js
+Str.of('This is my name').endsWith('names');
+
+// false
+```
+
 You may also pass an array of values to determine if the given string ends with any of the values in the array:
 
 ```js
@@ -1761,7 +1767,37 @@ Str.of('This is my name').endsWith(['name', 'foo']);
 ```
 
 ```js
-Str.of('This is my name').endsWith(['this', 'foo']);
+Str.of('This is my name').endsWith(['names', 'foo']);
+
+// false
+```
+#### doesntEndWith
+
+The `doesntEndWith` method determines if the given string doesn't end with a given substring:
+
+```js
+Str.of('This is my name').doesntEndWith('names');
+
+// true
+```
+
+```js
+Str.of('This is my name').doesntEndWith('name');
+
+// false
+```
+
+You may also pass an array of values to determine if the given string doesn't end with any of the values in the array:
+
+```js
+Str.of('This is my name').doesntEndWith(['names', 'foo']);
+
+// true
+```
+
+```js
+Str.of('This is my name').doesntEndWith(['name', 'foo']);
+;
 
 // false
 ```
@@ -2248,13 +2284,13 @@ Str.of('foo').pipe(string => 'bar');
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('LARAVEL FRAMEWORK').pipe((string: Stringable) => string.title());
 
 // 'Laravel Framework'
 ```
 
-```typescript
+```ts
 Str.of('foo').pipe((string: Stringable) => 'bar');
 
 // 'bar'
@@ -2580,6 +2616,56 @@ Str.of('This is my name').startsWith('This');
 // true
 ```
 
+```js
+Str.of('This is my name').startsWith('There');
+
+// false
+```
+
+You may also pass an array of values to determine if the given string begins with any of the values in the array:
+
+```js
+Str.of('This is my name').startsWith(['This', 'That', 'There']);
+
+// true
+```
+
+```js
+Str.of('This is my name').startsWith(['That', 'There']);
+
+// false
+```
+
+#### doesntStartWith
+
+The `doesntStartWith` method determines if the given string doesn't begin with the given value:
+
+```js
+Str.of('This is my name').doesntStartWith('There');
+
+// true
+```
+
+```js
+Str.of('This is my name').doesntStartWith('This');
+
+// false
+```
+
+You may also pass an array of values to determine if the given string doesn't begin with any of the values in the array:
+
+```js
+Str.of('This is my name').doesntStartWith(['There', 'foo']);
+
+// true
+```
+
+```js
+Str.of('This is my name').doesntStartWith(['This', 'foo']);
+
+// false
+```
+
 #### studly
 
 The `studly` method converts the given string to Studly caps case:
@@ -2669,7 +2755,7 @@ Str.of('Laravel')
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('Laravel')
     .append(' Framework')
     .tap((string: Stringable) => string.dump())
@@ -2801,10 +2887,27 @@ Str.of('Taylor').when(true, (string) => string.append(' Otwell'));
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('Taylor').when(true, (string: Stringable) => string.append(' Otwell'));
 
 // 'Taylor Otwell'
+```
+
+If necessary, you may pass another closure as the third parameter to the `when` method. 
+This closure will execute if the condition parameter evaluates to false.
+
+```js
+Str.of('Taylor').when(false, (string) => string.append(' Otwell'), (string) => string.append(' Swift'));
+
+// 'Taylor Swift'
+```
+
+Or, if you are using TypeScript:
+
+```ts
+Str.of('Taylor').when(false, (string: Stringable): Stringable => string.append(' Otwell'), (string: Stringable): Stringable => string.append(' Swift'));
+
+// 'Taylor Swift'
 ```
 
 #### unless
@@ -2820,7 +2923,7 @@ Str.of('Taylor').unless(false, (string) => string.append(' Otwell'));
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('Taylor').unless(false, (string: Stringable) => string.append(' Otwell'));
 
 // 'Taylor Otwell'
@@ -2842,14 +2945,12 @@ Str.of('tony stark').whenContains('tony', (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('tony stark').whenContains('tony', (string: Stringable) => string.title());
 
 // 'Tony Stark'
 ```
 
-If necessary, you may pass another closure as the third parameter to the `when` method. 
-This closure will execute if the string does not contain the given value.
 You may also pass an array of values to determine if the given string contains any of the values in the array:
 
 ```js
@@ -2860,11 +2961,14 @@ Str.of('tony stark').whenContains(['tony', 'hulk'], (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('tony stark').whenContains(['tony', 'hulk'], (string: Stringable) => string.title());
 
 // Tony Stark
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenContains` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenContainsAll
 
@@ -2879,19 +2983,19 @@ Str.of('tony stark').whenContainsAll(['tony', 'stark'], (string) => string.title
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('tony stark').whenContainsAll(['tony', 'stark'], (string: Stringable) => string.title());
 
 // 'Tony Stark'
 ```
 
-If necessary, you may pass another closure as the third parameter to the `when` method.
+If necessary, you may pass another closure as the third parameter to the `whenContainsAll` method.
 This closure will execute if the condition parameter evaluates to false.
 
 #### whenEmpty
 
 The `whenEmpty` method invokes the given closure if the string is empty. 
-If the closure returns a value, that value will also be returned by the whenEmpty method.
+If the closure returns a value, that value will also be returned by the `whenEmpty` method.
 If the closure does not return a value, the fluent string instance will be returned:
 
 ```js
@@ -2900,9 +3004,12 @@ Str.of('  ').whenEmpty((string) => string.trim().prepend('Laravel'));
 // 'Laravel'
 ```
 
+If necessary, you may pass another closure as the third parameter to the `whenEmpty` method.
+This closure will execute if the condition parameter evaluates to false.
+
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('  ').whenEmpty((string: Stringable) => string.trim().prepend('Laravel'));
 
 // 'Laravel'
@@ -2911,7 +3018,7 @@ Str.of('  ').whenEmpty((string: Stringable) => string.trim().prepend('Laravel'))
 #### whenNotEmpty
 
 The `whenNotEmpty` method invokes the given closure if the string is not empty. 
-If the closure returns a value, that value will also be returned by the whenNotEmpty method. 
+If the closure returns a value, that value will also be returned by the `whenNotEmpty` method. 
 If the closure does not return a value, the fluent string instance will be returned:
 
 ```js
@@ -2920,9 +3027,12 @@ Str.of('Framework').whenNotEmpty((string) => string.prepend('Laravel '));
 // 'Laravel Framework'
 ```
 
+If necessary, you may pass another closure as the third parameter to the `whenNotEmpty` method.
+This closure will execute if the condition parameter evaluates to false.
+
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('Framework').whenNotEmpty((string: Stringable) => string.prepend('Laravel '));
 
 // 'Laravel Framework'
@@ -2941,11 +3051,68 @@ Str.of('disney world').whenStartsWith('disney', (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('disney world').whenStartsWith('disney', (string: Stringable) => string.title());
 
 // 'Disney World'
 ```
+
+You may also pass an array of values to determine if the given string contains any of the values in the array:
+
+```js
+Str.of('disney world').whenStartsWith(['hello', 'disney'], (string) => string.title());
+
+// 'Disney World'
+```
+
+Or, if you are using TypeScript:
+
+```ts
+Str.of('disney world').whenStartsWith(['hello', 'disney'], (string: Stringable) => string.title());
+
+// 'Disney World'
+```
+
+If necessary, you may pass another closure as the third parameter to the `whenStartsWith` method.
+This closure will execute if the condition parameter evaluates to false.
+
+#### whenDoesntStartWith
+
+The `whenDoesntStartWith` method invokes the given closure if the string does not start with the given sub-string.
+The closure will receive the fluent string instance:
+
+```js
+Str.of('disney world').whenDoesntStartWith('hello', (string) => string.title());
+
+// 'Disney World'
+```
+
+Or, if you are using TypeScript:
+
+```ts
+Str.of('disney world').whenDoesntStartWith('hello', (string: Stringable) => string.title());
+
+// 'Disney World'
+```
+
+You may also pass an array of values to determine if the given string does not contain any of the values in the array:
+
+```js
+Str.of('disney world').whenDoesntStartWith(['hello', 'world'], (string: Stringable) => string.title());
+
+// Tony Stark
+```
+
+Or, if you are using TypeScript:
+
+```ts
+Str.of('disney world').whenDoesntStartWith(['hello', 'world'], (string: Stringable) => string.title());
+
+// 'Disney World'
+```
+
+If necessary, you may pass another closure as the third parameter to the `whenDoesntStartWith` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenEndsWith
 
@@ -2960,11 +3127,49 @@ Str.of('disney world').whenEndsWith('world', (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('disney world').whenEndsWith('world', (string: Stringable) => string.title());
 
 // 'Disney World'
 ```
+
+#### whenDoesntEndWith
+
+The `whenDoesntEndWith` method determines if the given string doesn't end with a given substring:
+The closure will receive the fluent string instance:
+
+```js
+Str.of('disney world').whenDoesntEndWith('land', (string) => string.title());
+
+// 'Disney World'
+```
+
+Or, if you are using TypeScript:
+
+```ts
+Str.of('disney world').whenDoesntEndWith('land', (string: Stringable) => string.title());
+
+// 'Disney World'
+```
+
+You may also pass an array of values to determine if the given string does not end with any of the values in the array:
+
+```js
+Str.of('disney world').whenDoesntEndWith(['land', 'moon'], (string) => string.title());
+
+// true
+```
+
+Or, if you are using TypeScript:
+
+```ts
+Str.of('disney world').whenDoesntEndWith(['land', 'moon'], (string: Stringable) => string.title());
+
+// 'Disney World'
+```
+
+If necessary, you may pass another closure as the third parameter to the `whenDoesntEndWith` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenExactly
 
@@ -2979,11 +3184,14 @@ Str.of('laravel').whenExactly('laravel', (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('laravel').whenExactly('laravel', (string: Stringable) => string.title());
 
 // 'Laravel'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenExactly` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenNotExactly
 
@@ -2998,11 +3206,14 @@ Str.of('framework').whenNotExactly('laravel', (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('framework').whenNotExactly('laravel', (string: Stringable) => string.title());
 
 // 'Framework'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenNotExactly` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenIs
 
@@ -3018,11 +3229,14 @@ Str.of('foo/bar').whenIs('foo/*', (string) => string.append('/baz'));
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('foo/bar').whenIs('foo/*', (string: Stringable) => string.append('/baz'));
 
 // 'foo/bar/baz'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenIs` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenIsAscii
 
@@ -3037,11 +3251,14 @@ Str.of('laravel').whenIsAscii((string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('laravel').whenIsAscii((string: Stringable) => string.title());
 
 // 'Laravel'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenIsAscii` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenIsUlid
 
@@ -3056,11 +3273,14 @@ Str.of('01gd6r360bp37zj17nxb55yv40').whenIsUlid((string) => string.substr(0, 8))
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('01gd6r360bp37zj17nxb55yv40').whenIsUlid((string: Stringable) => string.substr(0, 8));
 
 // '01gd6r36'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenIsUlid` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenIsUuid
 
@@ -3075,11 +3295,14 @@ Str.of('a0a2a2d2-0b87-4a18-83f2-2529882be2de').whenIsUuid((string) => string.sub
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('a0a2a2d2-0b87-4a18-83f2-2529882be2de').whenIsUuid((string: Stringable) => string.substr(0, 8));
 
 // 'a0a2a2d2'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenIsUuid` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### whenTest
 
@@ -3094,11 +3317,14 @@ Str.of('laravel framework').whenTest('/laravel/', (string) => string.title());
 
 Or, if you are using TypeScript:
 
-```typescript
+```ts
 Str.of('laravel framework').whenTest('/laravel/', (string: Stringable) => string.title());
 
 // 'Laravel Framework'
 ```
+
+If necessary, you may pass another closure as the third parameter to the `whenTest` method.
+This closure will execute if the condition parameter evaluates to false.
 
 #### wordCount
 
