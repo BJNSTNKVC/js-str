@@ -2005,11 +2005,19 @@ describe('Fluent Strings', (): void => {
         test('invokes the given closure if a given condition is true', (): void => {
             expect(Str.of('Taylor').when(true, (string: Stringable): Stringable => string.append(' Otwell')).toString()).toEqual('Taylor Otwell');
         });
+
+        test('invokes the fallback closure if the condition is false', (): void => {
+            expect(Str.of('Taylor').when(false, (string: Stringable): Stringable => string.append(' Otwell'), (string: Stringable): Stringable => string.append(' Swift')).toString()).toEqual('Taylor Swift');
+        });
     });
 
     describe('unless', (): void => {
         test('invokes the given closure if a given condition is false', (): void => {
             expect(Str.of('Taylor').unless(false, (string: Stringable): Stringable => string.append(' Otwell')).toString()).toEqual('Taylor Otwell');
+        });
+
+        test('invokes the fallback closure if the condition is true', (): void => {
+            expect(Str.of('Taylor').unless(true, (string: Stringable): Stringable => string.append(' Otwell'), (string: Stringable): Stringable => string.append(' Swift')).toString()).toEqual('Taylor Swift');
         });
     });
 
@@ -2021,11 +2029,19 @@ describe('Fluent Strings', (): void => {
         test('invokes the given closure if the string contains any value in the array', (): void => {
             expect(Str.of('tony stark').whenContains(['tony', 'hulk'], (string: Stringable): Stringable => string.title()).toString()).toEqual('Tony Stark');
         });
+
+        test('invokes the fallback closure if the string does not contain the given value', (): void => {
+            expect(Str.of('tony stark').whenContains('hulk', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('TONY STARK');
+        });
     });
 
     describe('whenContainsAll', (): void => {
         test('invokes the given closure if the string contains all the given sub-strings', (): void => {
             expect(Str.of('tony stark').whenContainsAll(['tony', 'stark'], (string: Stringable): Stringable => string.title()).toString()).toEqual('Tony Stark');
+        });
+
+        test('invokes the fallback closure if the string does not contain all the given sub-strings', (): void => {
+            expect(Str.of('tony stark').whenContainsAll(['tony', 'stark', 'ironman'], (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('TONY STARK');
         });
     });
 
@@ -2033,11 +2049,19 @@ describe('Fluent Strings', (): void => {
         test('invokes the given closure if the string is empty', (): void => {
             expect(Str.of('  ').whenEmpty((string: Stringable): Stringable => string.trim().prepend('Laravel')).toString()).toEqual('Laravel');
         });
+
+        test('invokes the fallback closure if the string is not empty', (): void => {
+            expect(Str.of('not empty').whenEmpty((string: Stringable): Stringable => string.trim().prepend('Laravel'), (string: Stringable): Stringable => string.upper()).toString()).toEqual('NOT EMPTY');
+        });
     });
 
     describe('whenNotEmpty', (): void => {
         test('invokes the given closure if the string is not empty', (): void => {
             expect(Str.of('Framework').whenNotEmpty((string: Stringable): Stringable => string.prepend('Laravel ')).toString()).toEqual('Laravel Framework');
+        });
+
+        test('invokes the fallback closure if the string is empty', (): void => {
+            expect(Str.of('   ').whenNotEmpty((string: Stringable): Stringable => string.prepend('Laravel '), (string: Stringable): Stringable => string.trim().prepend('Fallback: ')).toString()).toEqual('Fallback: ');
         });
     });
 
@@ -2045,11 +2069,37 @@ describe('Fluent Strings', (): void => {
         test('invokes the given closure if the string ends with the given sub-string', (): void => {
             expect(Str.of('disney world').whenEndsWith('world', (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
         });
+
+        test('invokes the given closure if the string ends with any of the given sub-strings', (): void => {
+            expect(Str.of('disney world').whenEndsWith(['hello', 'world'], (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
+        });
+
+        test('invokes the fallback closure if the string does not end with the given sub-string', (): void => {
+            expect(Str.of('disney world').whenEndsWith('hello', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('DISNEY WORLD');
+        });
+    });
+
+    describe('whenDoesntEndWith', (): void => {
+        test('invokes the given closure if the string does not end with the given sub-string', (): void => {
+            expect(Str.of('disney world').whenDoesntEndWith('land', (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
+        });
+
+        test('invokes the given closure if the string does not end with any of the given sub-strings', (): void => {
+            expect(Str.of('disney world').whenDoesntEndWith(['land', 'moon'], (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
+        });
+
+        test('invokes the fallback closure if the string ends with the given sub-string', (): void => {
+            expect(Str.of('disney world').whenDoesntEndWith('world', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('DISNEY WORLD');
+        });
     });
 
     describe('whenExactly', (): void => {
         test('invokes the given closure if the string exactly matches the given string', (): void => {
             expect(Str.of('laravel').whenExactly('laravel', (string: Stringable): Stringable => string.title()).toString()).toEqual('Laravel');
+        });
+
+        test('invokes the fallback closure if the string does not exactly match the given string', (): void => {
+            expect(Str.of('laravel').whenExactly('Laravel', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('LARAVEL');
         });
     });
 
@@ -2057,17 +2107,29 @@ describe('Fluent Strings', (): void => {
         test('invokes the given closure if the string does not exactly match the given string', (): void => {
             expect(Str.of('framework').whenNotExactly('laravel', (string: Stringable): Stringable => string.title()).toString()).toEqual('Framework');
         });
+
+        test('invokes the fallback closure if the string exactly matches the given string', (): void => {
+            expect(Str.of('laravel').whenNotExactly('laravel', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('LARAVEL');
+        });
     });
 
     describe('whenIs', (): void => {
         test('invokes the given closure if the string matches a given pattern', (): void => {
             expect(Str.of('foo/bar').whenIs('foo/*', (string: Stringable): Stringable => string.append('/baz')).toString()).toEqual('foo/bar/baz');
         });
+
+        test('invokes the fallback closure if the string does not match the given pattern', (): void => {
+            expect(Str.of('foo/bar').whenIs('bar/*', (string: Stringable): Stringable => string.append('/baz'), (string: Stringable): Stringable => string.upper()).toString()).toEqual('FOO/BAR');
+        });
     });
 
     describe('whenIsAscii', (): void => {
         test('invokes the given closure if the string is 7-bit ASCII', (): void => {
             expect(Str.of('laravel').whenIsAscii((string: Stringable): Stringable => string.title()).toString()).toEqual('Laravel');
+        });
+
+        test('invokes the fallback closure if the string is not 7-bit ASCII', (): void => {
+            expect(Str.of('läråvèl').whenIsAscii((string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('LÄRÅVÈL');
         });
     });
 
@@ -2081,17 +2143,47 @@ describe('Fluent Strings', (): void => {
         test('invokes the given closure if the string is a valid ULID', (): void => {
             expect(Str.of('01gd6r360bp37zj17nxb55yv40').whenIsUlid((string: Stringable): Stringable => string.substr(0, 8)).toString()).toEqual('01gd6r36');
         });
+
+        test('invokes the fallback closure if the string is not a valid UUID', (): void => {
+            expect(Str.of('not-a-uuid').whenIsUuid((string: Stringable): Stringable => string.substr(0, 8), (string: Stringable): Stringable => string.upper()).toString()).toEqual('NOT-A-UUID');
+        });
     });
 
     describe('whenStartsWith', (): void => {
         test('invokes the given closure if the string starts with the given sub-string', (): void => {
             expect(Str.of('disney world').whenStartsWith('disney', (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
         });
+
+        test('invokes the given closure if the string starts with any of the given sub-strings', (): void => {
+            expect(Str.of('disney world').whenStartsWith(['hello', 'disney'], (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
+        });
+
+        test('invokes the fallback closure if the string does not start with the given sub-string', (): void => {
+            expect(Str.of('disney world').whenStartsWith('hello', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('DISNEY WORLD');
+        });
+    });
+
+    describe('whenDoesntStartWith', (): void => {
+        test('invokes the given closure if the string does not start with the given sub-string', (): void => {
+            expect(Str.of('disney world').whenDoesntStartWith('hello', (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
+        });
+
+        test('invokes the given closure if the string does not start with any of the given sub-strings', (): void => {
+            expect(Str.of('disney world').whenDoesntStartWith(['foo', 'bar'], (string: Stringable): Stringable => string.title()).toString()).toEqual('Disney World');
+        });
+
+        test('invokes the fallback closure if the string starts with the given sub-string', (): void => {
+            expect(Str.of('disney world').whenDoesntStartWith('dis', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('DISNEY WORLD');
+        });
     });
 
     describe('whenTest', (): void => {
         test('invokes the given closure if the string matches the given regular expression', (): void => {
             expect(Str.of('laravel framework').whenTest('/laravel/', (string: Stringable): Stringable => string.title()).toString()).toEqual('Laravel Framework');
+        });
+
+        test('invokes the fallback closure if the string does not match the given regular expression', (): void => {
+            expect(Str.of('laravel framework').whenTest('/^[0-9]+$/', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('LARAVEL FRAMEWORK');
         });
     });
 
