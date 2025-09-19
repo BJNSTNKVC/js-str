@@ -21,6 +21,27 @@ enum Mode {
 
 class Str {
     /**
+     * The callback that should be used to generate UUIDs.
+     *
+     * @type { Function | null }
+     */
+    protected static uuidFactory: Function | null = null;
+
+    /**
+     * The callback that should be used to generate ULIDs.
+     *
+     * @type { Function | null }
+     */
+    protected static ulidFactory: Function | null = null;
+
+    /**
+     * The callback that should be used to generate random strings.
+     *
+     * @type { Function | null }
+     */
+    protected static randomStringFactory: Function | null = null;
+
+    /**
      * Get a new Stringable object from the given string.
      *
      * @param { string } string
@@ -242,9 +263,7 @@ class Str {
             haystack = haystack.toLowerCase();
         }
 
-        if (!(needles instanceof Array)) {
-            needles = [needles];
-        }
+        needles = Array.isArray(needles) ? needles : [needles];
 
         needles.forEach((needle: string): void => {
             if (ignoreCase) {
@@ -373,19 +392,9 @@ class Str {
      * @return { boolean }
      */
     static endsWith(haystack: string, needles: string | string[]): boolean {
-        let result: boolean = false;
+        needles = Array.isArray(needles) ? needles : [needles];
 
-        if (!(needles instanceof Array)) {
-            needles = [needles];
-        }
-
-        needles.forEach((needle: string): void => {
-            if (needle !== '' && haystack.endsWith(needle)) {
-                result = true;
-            }
-        });
-
-        return result;
+        return needles.some((needle: string): boolean => needle !== '' && haystack.endsWith(needle));
     }
 
     /**
@@ -758,22 +767,18 @@ class Str {
     static isMatch(pattern: string | string[], value: string): boolean {
         let result: boolean = false;
 
-        if (!(pattern instanceof Array)) {
-            pattern = [pattern];
-        }
+        pattern = Array.isArray(pattern) ? pattern : [pattern];
 
-        pattern.forEach(item => {
+        pattern.forEach((item: string): void => {
             if (item === value) {
                 result = true;
             }
 
-            // @ts-ignore
-            let body: string = /^\/(.*)\/\w*$/.exec(item)[1];
-            // @ts-ignore
-            let flags: string = /^\/.*\/(\w*)$/.exec(item)[1];
+            let body: string = (/^\/(.*)\/\w*$/.exec(item) as string[])[1] as string;
+            let flags: string = (/^\/.*\/(\w*)$/.exec(item) as string[])[1] as string;
             let expression: RegExp = new RegExp(body, flags);
 
-            if (RegExp(expression).exec(value)) {
+            if (expression.exec(value)) {
                 result = true;
             }
         });
@@ -1476,6 +1481,10 @@ class Str {
      * @return { string }
      */
     static random(length: number = 16): string {
+        if (this.randomStringFactory !== null) {
+            return this.randomStringFactory(length);
+        }
+
         let byteSize: number = Math.ceil((length) / 3) * 3;
 
         let bytes: string = crypto.getRandomValues(new Uint8Array(byteSize)).join('');
@@ -1485,6 +1494,60 @@ class Str {
         ['/', '+', '='].forEach((character: string): string => string = string.replace(character, ''));
 
         return string.substring(0, length);
+    }
+
+    /**
+     * Set the callable that will be used to generate random strings.
+     *
+     * @param { Function | null } factory
+     *
+     * @return { void }
+     */
+    static createRandomStringsUsing(factory: Function | null = null): void {
+        this.randomStringFactory = factory;
+    }
+
+    /**
+     * Set the sequence that will be used to generate random strings.
+     *
+     * @param { (string | undefined)[] } sequence
+     * @param { Function | null } whenMissing
+     *
+     * @return { void }
+     */
+    static createRandomStringsUsingSequence(sequence: (string | undefined)[], whenMissing: Function | null = null): void {
+        let next: number = 0;
+
+        whenMissing ??= (length: number): string => {
+            const factoryCache: Function | null = this.randomStringFactory;
+
+            this.randomStringFactory = null;
+
+            const randomString: string = this.random(length);
+
+            this.randomStringFactory = factoryCache;
+
+            next++;
+
+            return randomString;
+        };
+
+        this.createRandomStringsUsing((length: number) => {
+            if (sequence[next] !== undefined) {
+                return sequence[next++];
+            }
+
+            return whenMissing(length);
+        });
+    }
+
+    /**
+     * Indicate that random strings should be created normally and not using a custom factory.
+     *
+     * @return { void }
+     */
+    static createRandomStringsNormally(): void {
+        this.randomStringFactory = null;
     }
 
     /**
@@ -1551,9 +1614,7 @@ class Str {
      * @return { string }
      */
     static replace(search: string | string[], replace: string, subject: string, caseSensitive: boolean = true): string {
-        if (!(search instanceof Array)) {
-            search = [search];
-        }
+        search = Array.isArray(search) ? search : [search];
 
         search.forEach((term: string | RegExp): void => {
             if (!caseSensitive) {
@@ -2325,7 +2386,7 @@ class Str {
     static slug(title: string, separator: string = '-', dictionary: { [key: string]: string } = { '@': 'at' }): string {
         let flip: string = separator === '-' ? '_' : '-';
 
-        title = title.replace('![' + preg_quote(flip) + ']+!u', separator);
+        title = title.replace(`![${preg_quote(flip)}]+!u`, separator);
 
         for (let value in dictionary) {
             dictionary[value] = separator + dictionary[value] + separator;
@@ -2335,7 +2396,7 @@ class Str {
             title = title.replaceAll(value, (dictionary[value] as string));
         }
 
-        title = this.lower(title).replace('![^' + preg_quote(separator) + 'pLpNs]+!u', '');
+        title = this.lower(title).replace(`![^${preg_quote(separator)}pLpNs]+!u`, '');
 
         return title.replaceAll(/\s/g, separator).replace(new RegExp('\\' + separator + '+', 'g'), separator);
     }
@@ -2458,9 +2519,7 @@ class Str {
     static startsWith(haystack: string, needles: string | string[]): boolean {
         let result: boolean = false;
 
-        if (!(needles instanceof Array)) {
-            needles = [needles];
-        }
+        needles = Array.isArray(needles) ? needles : [needles];
 
         needles.forEach((needle: string): void => {
             if (needle !== '' && haystack.startsWith(needle)) {
@@ -2696,6 +2755,10 @@ class Str {
      * @return { string }
      */
     static uuid(): string {
+        if (this.uuidFactory !== null) {
+            return this.uuidFactory();
+        }
+
         let time: number = parseInt((Math.random() * Number.MAX_SAFE_INTEGER + 1).toString().substring(0, 13));
 
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (character: string): string {
@@ -2712,6 +2775,10 @@ class Str {
      * @return { string }
      */
     static uuid7(time: Date | null = null): string {
+        if (this.uuidFactory !== null) {
+            return this.uuidFactory();
+        }
+
         const values = new Uint32Array(3);
 
         crypto.getRandomValues(values);
@@ -2769,6 +2836,10 @@ class Str {
      * @return { string }
      */
     static orderedUuid(): string {
+        if (this.uuidFactory !== null) {
+            return this.uuidFactory();
+        }
+
         let time: number = new Date().getTime();
 
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (character: string): string {
@@ -2780,11 +2851,92 @@ class Str {
     }
 
     /**
+     * Set the callable that will be used to generate UUIDs.
+     *
+     * @param { Function | null } factory
+     *
+     * @return { void }
+     */
+    static createUuidsUsing(factory: Function | null = null): void {
+        this.uuidFactory = factory;
+    }
+
+    /**
+     * Set the sequence that will be used to generate random strings.
+     *
+     * @param { (string | undefined)[] } sequence
+     * @param { Function | null } whenMissing
+     *
+     * @return { void }
+     */
+    static createUuidsUsingSequence(sequence: (string | undefined)[], whenMissing: Function | null = null): void {
+        let next: number = 0;
+
+        whenMissing ??= (): string => {
+            const factoryCache: Function | null = this.uuidFactory;
+
+            this.uuidFactory = null;
+
+            const uuid: string = this.uuid();
+
+            this.uuidFactory = factoryCache;
+
+            next++;
+
+            return uuid;
+        };
+
+        this.createUuidsUsing(() => {
+            if (sequence[next] !== undefined) {
+                return sequence[next++];
+            }
+
+            return whenMissing();
+        });
+    }
+
+    /**
+     * Always return the same UUID when generating new UUIDs.
+     *
+     * @param { Function | null } callback
+     *
+     * @return { string }
+     */
+    static freezeUuids(callback: Function | null = null): string {
+        const uuid: string = this.uuid();
+
+        this.createUuidsUsing((): string => uuid);
+
+        if (callback !== null) {
+            try {
+                callback(uuid);
+            } finally {
+                this.createUuidsNormally();
+            }
+        }
+
+        return uuid;
+    }
+
+    /**
+     * Indicate that UUIDs should be created normally and not using a custom factory.
+     *
+     * @return { void }
+     */
+    static createUuidsNormally(): void {
+        this.uuidFactory = null;
+    }
+
+    /**
      * Generate a ULID.
      *
      * @return { string }
      */
     static ulid(): string {
+        if (this.ulidFactory !== null) {
+            return this.ulidFactory();
+        }
+
         const encoding: string = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
         const encodingLength: number = encoding.length;
         const timeLength: number = 10;
@@ -2818,8 +2970,7 @@ class Str {
 
             crypto.getRandomValues(buffer);
 
-            // @ts-ignore
-            return buffer[0] / 0xff;
+            return (buffer[0] as number) / 0xff;
         }
 
         /**
@@ -2844,6 +2995,83 @@ class Str {
         }
 
         return generateEncodedTime() + generateRandomString();
+    }
+
+    /**
+     * Set the callable that will be used to generate ULIDs.
+     *
+     * @param { Function | null } factory
+     *
+     * @return { void }
+     */
+    static createUlidsUsing(factory: Function | null = null): void {
+        this.ulidFactory = factory;
+    }
+
+    /**
+     * Set the sequence that will be used to generate ULIDs.
+     *
+     * @param { (string | undefined)[] } sequence
+     * @param { Function | null } whenMissing
+     *
+     * @return { void }
+     */
+    static createUlidsUsingSequence(sequence: (string | undefined)[], whenMissing: Function | null = null): void {
+        let next: number = 0;
+
+        whenMissing ??= (): string => {
+            const factoryCache: Function | null = this.ulidFactory;
+
+            this.ulidFactory = null;
+
+            const ulid: string = this.ulid();
+
+            this.ulidFactory = factoryCache;
+
+            next++;
+
+            return ulid;
+        };
+
+        this.createUlidsUsing(() => {
+            if (sequence[next] !== undefined) {
+                return sequence[next++];
+            }
+
+            return whenMissing();
+        });
+    }
+
+    /**
+     * Always return the same UUID when generating new UUIDs.
+     *
+     * @param { Function | null } callback
+     *
+     * @return { string }
+     */
+    static freezeUlids(callback: Function | null = null): string {
+        const ulid: string = this.ulid();
+
+        this.createUlidsUsing(() => ulid);
+
+        if (callback !== null) {
+            try {
+                callback(ulid);
+            } finally {
+                this.createUlidsNormally();
+            }
+        }
+
+        return ulid;
+    }
+
+    /**
+     * Indicate that ULIDs should be created normally and not using a custom factory.
+     *
+     * @return { void }
+     */
+    static createUlidsNormally(): void {
+        this.ulidFactory = null;
     }
 }
 
@@ -3162,11 +3390,11 @@ class Stringable {
     /**
      * Determine if the string is an exact match with the given value.
      *
-     * @param { Stringable|string } value
+     * @param { Stringable | string } value
      *
      * @return { boolean }
      */
-    exactly(value: string | object): boolean {
+    exactly(value: Stringable | string): boolean {
         if (value instanceof Stringable) {
             value = value.toString();
         }
@@ -3463,25 +3691,18 @@ class Stringable {
     /**
      * Call the given callback and return a new string.
      *
-     * @param { string | function } callback
+     * @param { keyof string | ((instance: this) => any) } callback
      *
      * @return { Stringable }
      */
-    pipe(callback: string | Function): Stringable {
-        // @ts-ignore
-        if (this.#value[callback] instanceof Function) {
-            // @ts-ignore
-            return new Stringable(this.#value[callback]());
+    pipe(callback: keyof string | ((instance: this) => any)): Stringable {
+        if (typeof callback === 'string') {
+            if ((this.#value as any)[callback] instanceof Function) {
+                return new Stringable((this.#value as any)[callback]());
+            }
         }
 
-        // @ts-ignore
-        if (window[callback] instanceof Function) {
-            // @ts-ignore
-            return new Stringable(window[callback](this.#value));
-        }
-
-        // @ts-ignore
-        return new Stringable(callback(this).toString());
+        return new Stringable((callback as (instance: this) => any)(this).toString());
     }
 
     /**
@@ -3836,11 +4057,11 @@ class Stringable {
     /**
      * Swap multiple keywords in a string with other keywords.
      *
-     * @param { object } map
+     * @param { Record<string, string> } map
      *
      * @return { Stringable }
      */
-    swap(map: { [key: string]: string }): Stringable {
+    swap(map: Record<string, string>): Stringable {
         return new Stringable(Str.swap(map, this.#value));
     }
 
@@ -3862,11 +4083,11 @@ class Stringable {
     /**
      * Call the given Closure with this instance then return the instance.
      *
-     * @param { Function } callback
+     * @param { ((instance: this) => any) } callback
      *
      * @return { Stringable }
      */
-    tap(callback: Function): this {
+    tap(callback: ((instance: this) => any)): this {
         callback(this);
 
         return this;
@@ -4261,9 +4482,9 @@ class Stringable {
     /**
      * Dump the string and end the script.
      *
-     * @return { void }
+     * @return { never }
      */
-    dd(): void {
+    dd(): never {
         this.dump();
 
         throw new Error('dd()');
@@ -4885,11 +5106,11 @@ function ucwords(string: string, separators: string = ' \t\r\n\f\v'): string {
  * @return { string }
  */
 function matchCase(value: string, comparison: string): string {
-    const cases: ((string: string) => string)[] = [
-        (string: string): string => string.toLowerCase(),
-        (string: string): string => string.toUpperCase(),
-        (string: string): string => string.charAt(0).toUpperCase() + string.slice(1),
-        (string: string): string => string.replace(/\b\w/g, (char: string): string => char.toUpperCase())
+    const cases: ((value: string) => string)[] = [
+        (value: string): string => value.toLowerCase(),
+        (value: string): string => value.toUpperCase(),
+        (value: string): string => value.charAt(0).toUpperCase() + value.slice(1),
+        (value: string): string => value.replace(/\b\w/g, (char: string): string => char.toUpperCase())
     ];
 
     for (const matcher of cases) {
@@ -4902,6 +5123,7 @@ function matchCase(value: string, comparison: string): string {
 }
 
 if (typeof exports != 'undefined') {
+    module.exports.Mode = Mode;
     module.exports.Str = Str;
     module.exports.Stringable = Stringable;
     module.exports.HtmlString = HtmlString;

@@ -1797,7 +1797,6 @@ Str.of('This is my name').doesntEndWith(['names', 'foo']);
 
 ```js
 Str.of('This is my name').doesntEndWith(['name', 'foo']);
-;
 
 // false
 ```
