@@ -1,5 +1,13 @@
 // @ts-nocheck
+
+
 require('../src/main');
+
+beforeEach((): void => {
+    Str.createRandomStringsNormally();
+    Str.createUuidsNormally();
+    Str.createUlidsNormally();
+});
 
 describe('Strings', (): void => {
     describe('Str.of', (): void => {
@@ -540,6 +548,59 @@ describe('Strings', (): void => {
         });
     });
 
+    describe('Str.createRandomStringsUsing', (): void => {
+        test('creates random strings using the specified callback', (): void => {
+            Str.createRandomStringsUsing((length: number): string => `length:${length}`);
+
+            expect(Str.random(7)).toEqual('length:7');
+
+            Str.createRandomStringsNormally();
+
+            expect(Str.random(7)).not.toEqual('length:7');
+        });
+    });
+
+    describe('Str.createRandomStringsUsingSequence', (): void => {
+        test('returns strings from the sequence in order', (): void => {
+            Str.createRandomStringsUsingSequence(['first', undefined, 'second', 'third']);
+
+            expect(Str.random()).toBe('first');
+            expect(Str.random()).toHaveLength(16);
+            expect(Str.random()).toBe('second');
+            expect(Str.random()).toBe('third');
+            expect(Str.random()).toHaveLength(16);
+        });
+
+        test('uses default fallback when none provided', (): void => {
+            Str.createRandomStringsUsingSequence([Str.random(), Str.random()], (): never => {
+                throw new Error('Out of random strings.');
+            });
+
+            Str.random();
+            Str.random();
+
+            expect((): string => Str.random()).toThrow('Out of random strings.');
+        });
+    });
+
+    describe('Str.createRandomStringsNormally', (): void => {
+        test('resets random string generation to default behavior', (): void => {
+            Str.createRandomStringsUsingSequence(['first', 'second']);
+
+            expect(Str.random()).toBe('first');
+            expect(Str.random()).toBe('second');
+
+            Str.createRandomStringsNormally();
+
+            const first: string = Str.random();
+            const second: string = Str.random();
+
+            expect(first).toHaveLength(16);
+            expect(second).toHaveLength(16);
+            expect(first).not.toEqual(second);
+        });
+    });
+
     describe('Str.repeat', (): void => {
         test('repeats the given string', (): void => {
             expect(Str.repeat('a', 5)).toEqual('aaaaa');
@@ -972,8 +1033,8 @@ describe('Strings', (): void => {
         });
 
         test('throws error for invalid timestamps', (): void => {
-            expect(() => Str.uuid7(new Date(-1))).toThrow(RangeError);
-            expect(() => Str.uuid7(new Date(281474976710655 + 1))).toThrow(RangeError);
+            expect((): string => Str.uuid7(new Date(-1))).toThrow(RangeError);
+            expect((): string => Str.uuid7(new Date(281474976710655 + 1))).toThrow(RangeError);
         });
 
         test('contains correct version and variant bits', (): void => {
@@ -998,7 +1059,7 @@ describe('Strings', (): void => {
             const uuids = new Set<string>();
             const count = 1000;
 
-            for (let i = 0; i < count; i++) {
+            for (let i: number = 0; i < count; i++) {
                 uuids.add(Str.uuid7());
             }
 
@@ -1012,15 +1073,191 @@ describe('Strings', (): void => {
         });
     });
 
+    describe('Str.createUuidsUsing', (): void => {
+        test('creates UUIDs using the specified callback', (): void => {
+            const uuid: string = 'e7d145db-1f4b-40a9-9684-5e7ad7673494';
+
+            Str.createUuidsUsing((): string => uuid);
+
+            expect(Str.uuid()).toBe(uuid);
+            expect(Str.uuid()).toBe(uuid);
+
+            Str.createUuidsNormally();
+
+            const first: string = Str.uuid();
+            const second: string = Str.uuid();
+
+            expect(first).not.toBe(uuid);
+            expect(second).not.toBe(uuid);
+            expect(first).not.toBe(second);
+        });
+    });
+
+    describe('Str.createUuidsUsingSequence', (): void => {
+        test('returns UUIDs from the sequence in order', (): void => {
+            const first: string = Str.uuid();
+            const second: string = Str.uuid();
+            const third: string = 'third';
+
+            Str.createUuidsUsingSequence([first, undefined, second, third]);
+
+            expect(Str.uuid()).toBe(first);
+            expect(Str.uuid()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+            expect(Str.uuid()).toBe(second);
+            expect(Str.uuid()).toBe(third);
+            expect(Str.uuid()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+            Str.createUuidsUsingSequence([]);
+        });
+
+        test('uses default fallback when none provided', (): void => {
+            const uuid: string = Str.uuid();
+
+            Str.createUuidsUsingSequence([uuid], (): never => {
+                throw new Error('Out of UUIDs.');
+            });
+
+            expect(Str.uuid()).toBe(uuid);
+            expect((): string => Str.uuid()).toThrow('Out of UUIDs.');
+        });
+    });
+
+    describe('Str.freezeUuids', (): void => {
+        test('returns the same UUID for all calls', (): void => {
+            const frozen: string = Str.freezeUuids();
+
+            try {
+                expect(Str.uuid()).toBe(frozen);
+                expect(Str.uuid()).toBe(frozen);
+            } finally {
+                Str.createUuidsNormally();
+            }
+        });
+
+        test('returns the same UUID for all calls within the callback', (): void => {
+            const frozen: string = Str.freezeUuids((uuid: string): void => {
+                expect(Str.uuid()).toBe(uuid);
+                expect(Str.uuid()).toBe(uuid);
+            });
+
+            expect(Str.uuid()).not.toBe(frozen);
+        });
+    });
+
+    describe('Str.createUuidsNormally', (): void => {
+        test('resets UUID generation to default behavior', (): void => {
+            const uuid: string = 'e7d145db-1f4b-40a9-9684-5e7ad7673494';
+
+            Str.createUuidsUsing((): string => uuid);
+
+            expect(Str.uuid()).toBe(uuid);
+
+            Str.createUuidsNormally();
+
+            const first: string = Str.uuid();
+            const second: string = Str.uuid();
+
+            expect(first).not.toBe(uuid);
+            expect(second).not.toBe(uuid);
+            expect(first).not.toBe(second);
+            expect(first).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        });
+    });
+
     describe('Str.ulid', (): void => {
         test('generates a ULID', (): void => {
             expect(Str.ulid()).toMatch(/[0-9A-Z]{26}/);
         });
     });
 
-    describe('str', (): void => {
-        test('returns instance of Stringable', (): void => {
-            expect(str()).toBeInstanceOf(Stringable);
+    describe('Str.createUlidsUsing', (): void => {
+        test('creates ULIDs using the specified callback', (): void => {
+            const ulid: string = '01K5FBP7ZJ1W659T73KNH9XK46';
+
+            Str.createUlidsUsing((): string => ulid);
+
+            expect(Str.ulid()).toBe(ulid);
+            expect(Str.ulid()).toBe(ulid);
+
+            Str.createUlidsNormally();
+
+            const first: string = Str.ulid();
+            const second: string = Str.ulid();
+
+            expect(first).not.toBe(ulid);
+            expect(second).not.toBe(ulid);
+            expect(first).not.toBe(second);
+        });
+    });
+
+    describe('Str.createUlidsUsingSequence', (): void => {
+        test('returns ULIDs from the sequence in order', (): void => {
+            const first: string = '01K5FBP7ZJ1W659T73KNH9XK46';
+            const second: string = '01H5KK0ZQZ9Z9Z9Z9Z9Z9Z9Z9';
+            const third: string = 'third';
+
+            Str.createUlidsUsingSequence([first, undefined, second, third]);
+
+            expect(Str.ulid()).toBe(first);
+            expect(Str.ulid()).toMatch(/^[0-9A-Z]{26}$/);
+            expect(Str.ulid()).toBe(second);
+            expect(Str.ulid()).toBe(third);
+            expect(Str.ulid()).toMatch(/^[0-9A-Z]{26}$/);
+
+            Str.createUlidsUsingSequence([]);
+        });
+
+        test('uses default fallback when none provided', (): void => {
+            const ulid: string = '01K5FBP7ZJ1W659T73KNH9XK46';
+
+            Str.createUlidsUsingSequence([ulid], (): never => {
+                throw new Error('Out of ULIDs.');
+            });
+
+            expect(Str.ulid()).toBe(ulid);
+            expect((): string => Str.ulid()).toThrow('Out of ULIDs.');
+        });
+    });
+
+    describe('Str.freezeUlids', (): void => {
+        test('returns the same ULID for all calls', (): void => {
+            const frozen: string = Str.freezeUlids();
+
+            try {
+                expect(Str.ulid()).toBe(frozen);
+                expect(Str.ulid()).toBe(frozen);
+            } finally {
+                Str.createUlidsNormally();
+            }
+        });
+
+        test('returns the same ULID for all calls within the callback', (): void => {
+            const frozen: string = Str.freezeUlids((ulid: string): void => {
+                expect(Str.ulid()).toBe(ulid);
+                expect(Str.ulid()).toBe(ulid);
+            });
+
+            expect(Str.ulid()).not.toBe(frozen);
+        });
+    });
+
+    describe('Str.createUlidsNormally', (): void => {
+        test('resets ULID generation to default behavior', (): void => {
+            const ulid: string = '01K5FBP7ZJ1W659T73KNH9XK46';
+
+            Str.createUlidsUsing((): string => ulid);
+
+            expect(Str.ulid()).toBe(ulid);
+
+            Str.createUlidsNormally();
+
+            const first: string = Str.ulid();
+            const second: string = Str.ulid();
+
+            expect(first).not.toBe(ulid);
+            expect(second).not.toBe(ulid);
+            expect(first).not.toBe(second);
+            expect(first).toMatch(/^[0-9A-Z]{26}$/);
         });
     });
 });
@@ -1263,6 +1500,10 @@ describe('Fluent Strings', (): void => {
         test('extracts an excerpt from the string that matches the first instance of a phrase within that string', (): void => {
             expect(Str.of('This is my name').excerpt('my', { 'radius': 3 }).toString()).toEqual('...is my na...');
         });
+
+        test('allows definition of custom omission strings', (): void => {
+            expect(Str.of('This is my name').excerpt('name', { 'radius': 3, 'omission': '(...) ' })).toEqual('(...) my name');
+        });
     });
 
     describe('explode', (): void => {
@@ -1473,7 +1714,7 @@ describe('Fluent Strings', (): void => {
 
     describe('pipe', (): void => {
         test('returns a Stringable instance', (): void => {
-            const string: Stringable = Str.of('hello world').pipe((str: Stringable) => str + '!');
+            const string: Stringable = Str.of('hello world').pipe((string: Stringable): string => string + '!');
 
             expect(string).toBeInstanceOf(Stringable);
             expect(string.toString()).toEqual('hello world!');
@@ -1485,7 +1726,7 @@ describe('Fluent Strings', (): void => {
 
         test('calls the given function with the string value', (): void => {
             const string: Stringable = Str.of('hello world');
-            const callback: Function = (str: Stringable) => str.explode(' ').join('-');
+            const callback: Function = (string: Stringable): Stringable => string.explode(' ').join('-');
             const result: Stringable = string.pipe(callback);
 
             expect(result.toString()).toEqual('hello-world');
@@ -2250,23 +2491,23 @@ describe('Fluent Strings', (): void => {
 
     describe('dd', (): void => {
         test('dumps the given string and ends execution of the script', (): void => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const $console: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]]> = jest.spyOn(console, 'log').mockImplementation();
 
-            expect(() => Str.of('Laravel').dd()).toThrow('dd()');
-            expect(consoleSpy).toHaveBeenCalledWith('Laravel');
+            expect((): never => Str.of('Laravel').dd()).toThrow('dd()');
+            expect($console).toHaveBeenCalledWith('Laravel');
 
-            consoleSpy.mockRestore();
+            $console.mockRestore();
         });
     });
 
     describe('dump', (): void => {
         test('dumps the given string to the console', (): void => {
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            const $console: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]]> = jest.spyOn(console, 'log').mockImplementation();
 
             Str.of('Laravel').dump();
-            expect(consoleSpy).toHaveBeenCalledWith('Laravel');
+            expect($console).toHaveBeenCalledWith('Laravel');
 
-            consoleSpy.mockRestore();
+            $console.mockRestore();
         });
     });
 
@@ -2518,5 +2759,11 @@ describe('Fluent Strings', (): void => {
         test('format \'U\' returns RFC 2822/RFC 5322 formatted date', (): void => {
             expect(Str.of('2024-02-29').toDate('U', 'CET')).toMatch(/^-?\d+$/);
         });
+    });
+});
+
+describe('str', (): void => {
+    test('returns instance of Stringable', (): void => {
+        expect(str()).toBeInstanceOf(Stringable);
     });
 });
