@@ -1,7 +1,4 @@
-// @ts-nocheck
-
-
-require('../src/main');
+import { HtmlStringType, Mode, str, Str, Stringable } from '../src/main';
 
 beforeEach((): void => {
     Str.createRandomStringsNormally();
@@ -279,7 +276,7 @@ describe('Strings', (): void => {
 
     describe('Str.isUrl', (): void => {
         test('determines if the given string is a valid URL', (): void => {
-            expect(Str.isUrl('http://example.com')).toBeTruthy();
+            expect(Str.isUrl('https://example.com')).toBeTruthy();
             expect(Str.isUrl('laravel')).toBeFalsy();
         });
     });
@@ -553,6 +550,7 @@ describe('Strings', (): void => {
             Str.createRandomStringsUsing((length: number): string => `length:${length}`);
 
             expect(Str.random(7)).toEqual('length:7');
+            expect(Str.random(7)).toEqual('length:7');
 
             Str.createRandomStringsNormally();
 
@@ -649,7 +647,7 @@ describe('Strings', (): void => {
     describe('Str.replaceMatches', (): void => {
         test('replaces all portions of a string matching a pattern with the given replacement string', (): void => {
             expect(Str.replaceMatches('/[^A-Za-z0-9]+/', '', '(+1) 501-555-1000')).toEqual('15015551000');
-            expect(Str.replaceMatches('/\\d/', (matches) => '[' + matches[0] + ']', '123')).toEqual('[1][2][3]');
+            expect(Str.replaceMatches('/\\d/', (matches: string[]): string => '[' + matches[0] + ']', '123')).toEqual('[1][2][3]');
         });
     });
 
@@ -1017,7 +1015,7 @@ describe('Strings', (): void => {
             const time: number = parseInt(uuid.slice(0, 8) + uuid.slice(9, 13), 16);
 
             expect(time).toBeGreaterThanOrEqual(before);
-            expect(time).toBeLessThanOrEqual(after);
+            expect(time).toBeLessThanOrEqual(after as number);
         });
 
         test('accepts custom timestamp', (): void => {
@@ -1040,8 +1038,8 @@ describe('Strings', (): void => {
         test('contains correct version and variant bits', (): void => {
             const parts: string[] = Str.uuid7().split('-');
 
-            expect(parts[2][0]).toBe('7');
-            expect(['8', '9', 'a', 'b']).toContain(parts[3][0]);
+            expect((parts[2] as string)[0]).toBe('7');
+            expect(['8', '9', 'a', 'b']).toContain((parts[3] as string)[0]);
         });
 
         test('has correct byte structure', (): void => {
@@ -1498,7 +1496,7 @@ describe('Fluent Strings', (): void => {
 
     describe('excerpt', (): void => {
         test('extracts an excerpt from the string that matches the first instance of a phrase within that string', (): void => {
-            expect(Str.of('This is my name').excerpt('my', { 'radius': 3 }).toString()).toEqual('...is my na...');
+            expect(Str.of('This is my name').excerpt('my', { 'radius': 3 })).toEqual('...is my na...');
         });
 
         test('allows definition of custom omission strings', (): void => {
@@ -1563,7 +1561,7 @@ describe('Fluent Strings', (): void => {
 
     describe('isUrl', (): void => {
         test('determines if a given string is a URL', (): void => {
-            expect(Str.of('http://example.com').isUrl()).toBeTruthy();
+            expect(Str.of('https://example.com').isUrl()).toBeTruthy();
             expect(Str.of('Taylor').isUrl()).toBeFalsy();
         });
     });
@@ -1726,7 +1724,7 @@ describe('Fluent Strings', (): void => {
 
         test('calls the given function with the string value', (): void => {
             const string: Stringable = Str.of('hello world');
-            const callback: Function = (string: Stringable): Stringable => string.explode(' ').join('-');
+            const callback: ((instance: Stringable) => any) = (string: Stringable): string => string.explode(' ').join('-');
             const result: Stringable = string.pipe(callback);
 
             expect(result.toString()).toEqual('hello-world');
@@ -1940,7 +1938,7 @@ describe('Fluent Strings', (): void => {
         });
 
         test('replaces all portions of a string matching a pattern with the given replacement string', (): void => {
-            expect(Str.of('123').replaceMatches('/\\d/', (match) => '[' + match[0] + ']').toString()).toEqual('[1][2][3]');
+            expect(Str.of('123').replaceMatches('/\\d/', (match: string[]): string => '[' + match[0] + ']').toString()).toEqual('[1][2][3]');
         });
     });
 
@@ -2465,7 +2463,7 @@ describe('Fluent Strings', (): void => {
 
     describe('toHtmlString', (): void => {
         test('converts the string instance to an instance of HTMLElement', (): void => {
-            const input: HTMLInputElement = Str.of('<input type="text" placeholder="Hello">').toHtmlString();
+            const input: HTMLInputElement = Str.of('<input type="text" placeholder="Hello">').toHtmlString() as HtmlStringType as HTMLInputElement;
 
             expect(input).toBeInstanceOf(HTMLInputElement);
             expect(input.type).toEqual('text');
@@ -2713,7 +2711,7 @@ describe('Fluent Strings', (): void => {
         });
 
         test('format \'u\' returns microseconds', (): void => {
-            expect(() => Str.of('2024-02-29 08:09:07.654321').toDate('u', 'CET')).toThrow('Microseconds are not supported.'); // Disabled temporarily
+            expect((): string => Str.of('2024-02-29 08:09:07.654321').toDate('u', 'CET')).toThrow('Microseconds are not supported.');
         });
 
         test('format \'v\' returns milliseconds', (): void => {
