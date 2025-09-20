@@ -1,14 +1,14 @@
-type HtmlStringType = HTMLElement | Node | string;
+export type HtmlStringType = HTMLElement | Node | string;
 
-type ExcerptOptions = { radius?: number, omission?: string }
+export type ExcerptOptions = { radius?: number, omission?: string }
 
-type Value<T> = boolean | ((instance: T) => boolean);
+export type Value<T> = boolean | ((instance: T) => boolean);
 
-type Callback<T> = (instance: T, value: boolean) => T | void | undefined;
+export type Callback<T> = (instance: T, value: boolean) => T | void | undefined;
 
-type Fallback<T> = Callback<T> | null;
+export type Fallback<T> = Callback<T> | null;
 
-enum Mode {
+export enum Mode {
     MB_CASE_UPPER        = 0,
     MB_CASE_LOWER        = 1,
     MB_CASE_TITLE        = 2,
@@ -19,7 +19,7 @@ enum Mode {
     MB_CASE_FOLD_SIMPLE  = 7
 }
 
-class Str {
+export class Str {
     /**
      * The callback that should be used to generate UUIDs.
      *
@@ -1499,11 +1499,11 @@ class Str {
     /**
      * Set the callable that will be used to generate random strings.
      *
-     * @param { Function | null } factory
+     * @param { ((length: number) => string) | null } factory
      *
      * @return { void }
      */
-    static createRandomStringsUsing(factory: Function | null = null): void {
+    static createRandomStringsUsing(factory: ((length: number) => string) | null = null): void {
         this.randomStringFactory = factory;
     }
 
@@ -1532,7 +1532,7 @@ class Str {
             return randomString;
         };
 
-        this.createRandomStringsUsing((length: number) => {
+        this.createRandomStringsUsing((length: number): any => {
             if (sequence[next] !== undefined) {
                 return sequence[next++];
             }
@@ -3075,7 +3075,7 @@ class Str {
     }
 }
 
-class Stringable {
+export class Stringable {
     /**
      * The underlying string value.
      *
@@ -4947,7 +4947,7 @@ class Stringable {
     }
 }
 
-class HtmlString {
+export class HtmlString {
     /**
      * The HTML string.
      *
@@ -4975,15 +4975,15 @@ class HtmlString {
         const pattern: RegExp = /(?!<!DOCTYPE)<([^\s>]+)(\s|>)+/;
         const tag: RegExpExecArray | null = RegExp(pattern).exec(this.#html);
 
-        if (!tag) {
+        if (tag === null) {
             return this.#html;
         }
 
-        const DOM: HTMLElement = document.createElement((tag[1] as string));
+        const DOM: HTMLElement = document.createElement(tag[1] as string);
 
         DOM.innerHTML = this.#html;
 
-        return (tag[1] as string) === 'html' ? DOM : DOM.firstChild as HtmlStringType;
+        return tag[1] === 'html' ? DOM : DOM.firstChild as HtmlStringType;
     }
 
     /**
@@ -5010,14 +5010,14 @@ class HtmlString {
      * @return { string }
      */
     toString(): string {
-        const html: HTMLElement | Node | string = this.toHtml();
+        const html: HtmlStringType = this.toHtml();
 
         if (html instanceof HTMLElement) {
             return html.outerHTML;
         }
 
         if (html instanceof Node) {
-            return (html.textContent as string);
+            return html.textContent as string;
         }
 
         return html;
@@ -5059,7 +5059,7 @@ class RegExpString {
  *
  * @return Stringable
  */
-function str(string: string = ''): Stringable {
+export function str(string: string = ''): Stringable {
     return Str.of(string);
 }
 
