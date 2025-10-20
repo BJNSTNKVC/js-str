@@ -26,10 +26,36 @@ describe('Strings', (): void => {
     });
 
     describe('Str.ascii', (): void => {
-        test('attempts to transliterate the string into an ASCII value', (): void => {
-            expect(Str.ascii('û')).toEqual('u');
+        test('transliterates accented characters to ASCII equivalents', (): void => {
+            expect(Str.ascii('ü')).toEqual('u');
+            expect(Str.ascii('é')).toEqual('e');
+            expect(Str.ascii('ñ')).toEqual('n');
+            expect(Str.ascii('ç')).toEqual('c');
+            expect(Str.ascii('å')).toEqual('a');
         });
-    });
+
+        test('removes diacritical marks', (): void => {
+            expect(Str.ascii('c\u0327')).toEqual('c');
+            expect(Str.ascii('e\u0301')).toEqual('e');
+            expect(Str.ascii('a\u0308')).toEqual('a');
+        });
+
+        test('handles strings with only non-alphanumeric characters', (): void => {
+            expect(Str.ascii('!@#$%^&*()_+-=')).toEqual('!@#$%^&*()_+-=');
+            expect(Str.ascii('   ')).toEqual('   ');
+        });
+
+        test('preserves case for ASCII letters', (): void => {
+            expect(Str.ascii('HelloWorld')).toEqual('HelloWorld');
+            expect(Str.ascii('HELLOworld')).toEqual('HELLOworld');
+        });
+
+        test('handles mixed input', (): void => {
+            expect(Str.ascii('Héllö Wörld! 123')).toEqual('Hello World! 123');
+            expect(Str.ascii('Café au lait')).toEqual('Cafe au lait');
+            expect(Str.ascii('Mëtàl Hëàd')).toEqual('Metal Head');
+        });
+    })
 
     describe('Str.before', (): void => {
         test('returns everything before the given value in a string', (): void => {
@@ -1286,10 +1312,36 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('ascii', (): void => {
-        test('transliterates the string into an ASCII value', (): void => {
+        test('transliterates accented characters to ASCII equivalents', (): void => {
             expect(Str.of('ü').ascii().toString()).toEqual('u');
+            expect(Str.of('é').ascii().toString()).toEqual('e');
+            expect(Str.of('ñ').ascii().toString()).toEqual('n');
+            expect(Str.of('ç').ascii().toString()).toEqual('c');
+            expect(Str.of('å').ascii().toString()).toEqual('a');
         });
-    });
+
+        test('removes diacritical marks', (): void => {
+            expect(Str.of('c\u0327').ascii().toString()).toEqual('c');
+            expect(Str.of('e\u0301').ascii().toString()).toEqual('e');
+            expect(Str.of('a\u0308').ascii().toString()).toEqual('a');
+        });
+
+        test('handles strings with only non-alphanumeric characters', (): void => {
+            expect(Str.of('!@#$%^&*()_+-=').ascii().toString()).toEqual('!@#$%^&*()_+-=');
+            expect(Str.of('   ').ascii().toString()).toEqual('   ');
+        });
+
+        test('preserves case for ASCII letters', (): void => {
+            expect(Str.of('HelloWorld').ascii().toString()).toEqual('HelloWorld');
+            expect(Str.of('HELLOworld').ascii().toString()).toEqual('HELLOworld');
+        });
+
+        test('handles mixed input', (): void => {
+            expect(Str.of('Héllö Wörld! 123').ascii().toString()).toEqual('Hello World! 123');
+            expect(Str.of('Café au lait').ascii().toString()).toEqual('Cafe au lait');
+            expect(Str.of('Mëtàl Hëàd').ascii().toString()).toEqual('Metal Head');
+        });
+    })
 
     describe('basename', (): void => {
         test('returns the trailing name component of the given string', (): void => {
