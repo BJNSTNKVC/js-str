@@ -383,11 +383,13 @@ describe('Strings', (): void => {
 
     describe('Str.isMatch', (): void => {
         test('determines if the string matches a given regular expression', (): void => {
-            expect(Str.isMatch('/foo (.*)/', 'foo bar')).toBeTruthy();
+            expect(Str.isMatch(/foo (.*)/, 'foo bar')).toBeTruthy();
+            expect(Str.isMatch(/foo (.*)/, 'laravel')).toBeFalsy();
         });
 
-        test('determines if the string does not match a given regular expression', (): void => {
-            expect(Str.isMatch('/foo (.*)/', 'laravel')).toBeFalsy();
+        test('determines if the string matches a given array of regular expression', (): void => {
+            expect(Str.isMatch([/.*,.*!/, /H.o/], 'Hello, Laravel!')).toBeTruthy();
+            expect(Str.isMatch([/.*,.*!/, /H.o/], 'Hello, Laravel')).toBeFalsy();
         });
     });
 
@@ -1718,11 +1720,13 @@ describe('Fluent Strings', (): void => {
 
     describe('isMatch', (): void => {
         test('determines if the string matches a given regular expression', (): void => {
-            expect(Str.of('foo bar').isMatch('/foo (.*)/')).toBeTruthy();
+            expect(Str.of('foo bar').isMatch(/foo (.*)/)).toBeTruthy();
+            expect(Str.of('laravel').isMatch(/foo (.*)/)).toBeFalsy();
         });
 
-        test('determines if the string does not match a given regular expression', (): void => {
-            expect(Str.of('laravel').isMatch('/foo (.*)/')).toBeFalsy();
+        test('determines if the string matches a given array of regular expression', (): void => {
+            expect(Str.of('Hello, Laravel!').isMatch([/.*,.*!/, /H.o/])).toBeTruthy();
+            expect(Str.of('Hello, Laravel').isMatch([/.*,.*!/, /H.o/])).toBeFalsy();
         });
     });
 

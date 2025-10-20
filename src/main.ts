@@ -756,26 +756,18 @@ export class Str {
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | string[] } pattern
+     * @param { RegExp | RegExp[] } pattern
      * @param { string } value
      *
      * @return { boolean }
      */
-    static isMatch(pattern: string | string[], value: string): boolean {
+    static isMatch(pattern: RegExp | RegExp[], value: string): boolean {
         let result: boolean = false;
 
         pattern = Array.isArray(pattern) ? pattern : [pattern];
 
-        pattern.forEach((item: string): void => {
-            if (item === value) {
-                result = true;
-            }
-
-            let body: string = (/^\/(.*)\/\w*$/.exec(item) as string[])[1] as string;
-            let flags: string = (/^\/.*\/(\w*)$/.exec(item) as string[])[1] as string;
-            let expression: RegExp = new RegExp(body, flags);
-
-            if (expression.exec(value)) {
+        pattern.forEach((item: RegExp): void => {
+            if (item.exec(value)) {
                 result = true;
             }
         });
@@ -3610,11 +3602,11 @@ export class Stringable {
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | string[] } pattern
+     * @param { RegExp | RegExp[] } pattern
      *
      * @return { boolean }
      */
-    isMatch(...pattern: string[]): boolean {
+    isMatch(pattern: RegExp | RegExp[]): boolean {
         return Str.isMatch(pattern, this.#value);
     }
 
