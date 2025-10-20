@@ -360,6 +360,9 @@ export class Str {
 
                 break;
             }
+            default: {
+                throw new Error('Argument #2 (mode) must be one of the Mode.MB_CASE_* constants');
+            }
         }
 
         return string;

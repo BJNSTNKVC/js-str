@@ -55,7 +55,7 @@ describe('Strings', (): void => {
             expect(Str.ascii('Café au lait')).toEqual('Cafe au lait');
             expect(Str.ascii('Mëtàl Hëàd')).toEqual('Metal Head');
         });
-    })
+    });
 
     describe('Str.before', (): void => {
         test('returns everything before the given value in a string', (): void => {
@@ -169,17 +169,22 @@ describe('Strings', (): void => {
 
     describe('Str.convertCase', (): void => {
         test('converts the case of a string', (): void => {
+            expect(Str.convertCase('HeLLo')).toEqual('hello');
             expect(Str.convertCase('hello', Mode.MB_CASE_UPPER)).toEqual('HELLO');
-            expect(Str.convertCase('WORLD', Mode.MB_CASE_UPPER)).toEqual('WORLD');
-
-            expect(Str.convertCase('HELLO', Mode.MB_CASE_LOWER)).toEqual('hello');
             expect(Str.convertCase('WORLD', Mode.MB_CASE_LOWER)).toEqual('world');
-
+            expect(Str.convertCase('hello world', Mode.MB_CASE_TITLE)).toEqual('Hello World');
             expect(Str.convertCase('HeLLo', Mode.MB_CASE_FOLD)).toEqual('hello');
-            expect(Str.convertCase('WoRLD', Mode.MB_CASE_FOLD)).toEqual('world');
-
+            expect(Str.convertCase('hello', Mode.MB_CASE_UPPER_SIMPLE)).toEqual('HELLO');
+            expect(Str.convertCase('HELLO', Mode.MB_CASE_LOWER_SIMPLE)).toEqual('hello');
+            expect(Str.convertCase('hello world', Mode.MB_CASE_TITLE_SIMPLE)).toEqual('Hello World');
+            expect(Str.convertCase('HeLLo', Mode.MB_CASE_FOLD_SIMPLE)).toEqual('hello');
             expect(Str.convertCase('üöä', Mode.MB_CASE_UPPER)).toEqual('ÜÖÄ');
             expect(Str.convertCase('ÜÖÄ', Mode.MB_CASE_LOWER)).toEqual('üöä');
+        });
+
+        test('throws error for invalid mode', (): void => {
+            expect((): string => Str.convertCase('test', -1)).toThrow('Argument #2 (mode) must be one of the Mode.MB_CASE_* constants');
+            expect((): string => Str.convertCase('test', -1 as Mode)).toThrow('Argument #2 (mode) must be one of the Mode.MB_CASE_* constants');
         });
     });
 
@@ -1341,7 +1346,7 @@ describe('Fluent Strings', (): void => {
             expect(Str.of('Café au lait').ascii().toString()).toEqual('Cafe au lait');
             expect(Str.of('Mëtàl Hëàd').ascii().toString()).toEqual('Metal Head');
         });
-    })
+    });
 
     describe('basename', (): void => {
         test('returns the trailing name component of the given string', (): void => {
@@ -1469,17 +1474,30 @@ describe('Fluent Strings', (): void => {
 
     describe('convertCase', (): void => {
         test('converts the case of a string', (): void => {
+            expect(Str.of('HeLLo').convertCase().toString()).toEqual('hello');
             expect(Str.of('hello').convertCase(Mode.MB_CASE_UPPER).toString()).toEqual('HELLO');
-            expect(Str.of('WORLD').convertCase(Mode.MB_CASE_UPPER).toString()).toEqual('WORLD');
-
-            expect(Str.of('HELLO').convertCase(Mode.MB_CASE_LOWER).toString()).toEqual('hello');
             expect(Str.of('WORLD').convertCase(Mode.MB_CASE_LOWER).toString()).toEqual('world');
-
+            expect(Str.of('hello world').convertCase(Mode.MB_CASE_TITLE).toString()).toEqual('Hello World');
             expect(Str.of('HeLLo').convertCase(Mode.MB_CASE_FOLD).toString()).toEqual('hello');
-            expect(Str.of('WoRLD').convertCase(Mode.MB_CASE_FOLD).toString()).toEqual('world');
-
+            expect(Str.of('hello').convertCase(Mode.MB_CASE_UPPER_SIMPLE).toString()).toEqual('HELLO');
+            expect(Str.of('HELLO').convertCase(Mode.MB_CASE_LOWER_SIMPLE).toString()).toEqual('hello');
+            expect(Str.of('hello world').convertCase(Mode.MB_CASE_TITLE_SIMPLE).toString()).toEqual('Hello World');
+            expect(Str.of('HeLLo').convertCase(Mode.MB_CASE_FOLD_SIMPLE).toString()).toEqual('hello');
             expect(Str.of('üöä').convertCase(Mode.MB_CASE_UPPER).toString()).toEqual('ÜÖÄ');
             expect(Str.of('ÜÖÄ').convertCase(Mode.MB_CASE_LOWER).toString()).toEqual('üöä');
+        });
+
+        test('handles empty string and whitespace', (): void => {
+            expect(Str.of('').convertCase(Mode.MB_CASE_UPPER).toString()).toEqual('');
+            expect(Str.of('   ').convertCase(Mode.MB_CASE_LOWER).toString()).toEqual('   ');
+            expect(Str.of('  test  ').convertCase(Mode.MB_CASE_TITLE).toString()).toEqual('  Test  ');
+        });
+
+        test('throws error for invalid mode', (): void => {
+            // @ts-expect-error
+            expect((): string => Str.of('test').convertCase(-1)).toThrow('Argument #2 (mode) must be one of the Mode.MB_CASE_* constants');
+            // @ts-expect-error
+            expect((): string => Str.of('test').convertCase(-1 as Mode)).toThrow('Argument #2 (mode) must be one of the Mode.MB_CASE_* constants');
         });
     });
 
