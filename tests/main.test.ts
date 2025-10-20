@@ -373,11 +373,11 @@ describe('Strings', (): void => {
 
     describe('Str.match', (): void => {
         test('returns the portion of a string that matches a given regular expression pattern', (): void => {
-            expect(Str.match('/bar/', 'foo bar')).toEqual('bar');
+            expect(Str.match(/bar/, 'foo bar')).toEqual('bar');
         });
 
         test('returns the portion of a string that matches a regular expression with a capturing group', (): void => {
-            expect(Str.match('/foo (.*)/', 'foo bar')).toEqual('bar');
+            expect(Str.match(/foo (.*)/, 'foo bar')).toEqual('bar');
         });
     });
 
@@ -1708,11 +1708,11 @@ describe('Fluent Strings', (): void => {
 
     describe('match', (): void => {
         test('returns the portion of a string that matches a given regular expression pattern', (): void => {
-            expect(Str.of('foo bar').match('/bar/').toString()).toEqual('bar');
+            expect(Str.of('foo bar').match(/bar/).toString()).toEqual('bar');
         });
 
         test('returns the portion of a string that matches a regular expression with a capturing group', (): void => {
-            expect(Str.of('foo bar').match('/foo (.*)/').toString()).toEqual('bar');
+            expect(Str.of('foo bar').match(/foo (.*)/).toString()).toEqual('bar');
         });
     });
 
@@ -1738,7 +1738,7 @@ describe('Fluent Strings', (): void => {
 
     describe('test', (): void => {
         test('determines if a string matches the given regular expression pattern', (): void => {
-            expect(Str.of('Laravel Framework').test('/Laravel/').toString()).toEqual('true');
+            expect(Str.of('Laravel Framework').test(/Laravel/).toString()).toEqual('true');
         });
     });
 
@@ -2488,11 +2488,11 @@ describe('Fluent Strings', (): void => {
 
     describe('whenTest', (): void => {
         test('invokes the given closure if the string matches the given regular expression', (): void => {
-            expect(Str.of('laravel framework').whenTest('/laravel/', (string: Stringable): Stringable => string.title()).toString()).toEqual('Laravel Framework');
+            expect(Str.of('laravel framework').whenTest(/laravel/, (string: Stringable): Stringable => string.title()).toString()).toEqual('Laravel Framework');
         });
 
         test('invokes the fallback closure if the string does not match the given regular expression', (): void => {
-            expect(Str.of('laravel framework').whenTest('/^[0-9]+$/', (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('LARAVEL FRAMEWORK');
+            expect(Str.of('laravel framework').whenTest(/^[0-9]+$/, (string: Stringable): Stringable => string.title(), (string: Stringable): Stringable => string.upper()).toString()).toEqual('LARAVEL FRAMEWORK');
         });
     });
 

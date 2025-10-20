@@ -738,19 +738,15 @@ export class Str {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      * @param { string } subject
      *
      * @return { string }
      */
-    static match(pattern: string, subject: string): string {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags);
+    static match(pattern: RegExp, subject: string): string {
+        const matches: RegExpExecArray | null = pattern.exec(subject);
 
-        const matches: RegExpMatchArray | null = RegExp(expression).exec(subject);
-
-        if (!matches) {
+        if (matches === null) {
             return '';
         }
 
@@ -3603,11 +3599,11 @@ export class Stringable {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      *
      * @return { Stringable }
      */
-    match(pattern: string): Stringable {
+    match(pattern: RegExp): Stringable {
         return new Stringable(Str.match(pattern, this.#value));
     }
 
@@ -3636,11 +3632,11 @@ export class Stringable {
     /**
      * Determine if the string matches the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      *
      * @return { boolean }
      */
-    test(pattern: string): boolean {
+    test(pattern: RegExp): boolean {
         return this.match(pattern).isNotEmpty();
     }
 
@@ -4376,13 +4372,13 @@ export class Stringable {
     /**
      * Execute the given callback if the string matches the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      * @param { Callback<this> } callback
      * @param { Fallback<this> } fallback
      *
      * @return { this }
      */
-    whenTest(pattern: string, callback: Callback<this>, fallback: Fallback<this> = null): this {
+    whenTest(pattern: RegExp, callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.test(pattern), callback, fallback);
     }
 
