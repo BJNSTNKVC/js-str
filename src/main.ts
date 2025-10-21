@@ -1827,7 +1827,7 @@ export class Str {
      */
     static title(value: string): string {
         return value.split(/[^A-Za-z]/)
-            .map((word: string): string => this.ucfirst(word[0] + word.substring(1).toLowerCase()))
+            .map((word: string): string => word === '' ? word : this.ucfirst(word[0] + word.substring(1).toLowerCase()))
             .join(' ');
     }
 
