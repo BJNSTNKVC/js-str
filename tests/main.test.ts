@@ -683,8 +683,23 @@ describe('Strings', (): void => {
 
     describe('Str.replaceMatches', (): void => {
         test('replaces all portions of a string matching a pattern with the given replacement string', (): void => {
-            expect(Str.replaceMatches('/[^A-Za-z0-9]+/', '', '(+1) 501-555-1000')).toEqual('15015551000');
-            expect(Str.replaceMatches('/\\d/', (matches: string[]): string => '[' + matches[0] + ']', '123')).toEqual('[1][2][3]');
+            expect(Str.replaceMatches(/baz/, 'bar', 'foo bar baz')).toEqual('foo bar bar');
+            expect(Str.replaceMatches(/404/, 'found', 'foo bar baz')).toEqual('foo bar baz');
+        });
+
+        test('replaces all portions of a string matching a pattern with the given array of replacement strings', (): void => {
+            expect(Str.replaceMatches([/bar/, /baz/], ['XXX', 'YYY'], 'foo bar baz')).toEqual('foo XXX YYY');
+            expect(Str.replaceMatches([/bar/, /baz/], ['XXX'], 'foo bar baz')).toEqual('foo XXX ');
+        });
+
+        test('replaces all portions of a string matching a pattern with the given callback as a replacement', (): void => {
+            expect(Str.replaceMatches(/\d/, (matches: string[]): string => `[${matches[0]}]`, '123')).toEqual('[1][2][3]');
+            expect(Str.replaceMatches(/ba(.)/, (matches: [string, string]): string => `ba${(matches[1]).toUpperCase()}`, 'foo baz bar')).toEqual('foo baZ baR');
+        });
+
+        test('limits the number of replacements when "limit" value is provided', (): void => {
+            expect(Str.replaceMatches(/ba(.)/, 'bar', 'foo baz baz', 1)).toEqual('foo bar baz');
+            expect(Str.replaceMatches(/\d/, (matches: string[]): string => `[${matches[0]}]`, '123', 1)).toEqual('[1]23');
         });
     });
 
@@ -1746,7 +1761,7 @@ describe('Fluent Strings', (): void => {
         test('returns an array containing matches of a regular expression with a capturing group', (): void => {
             expect(Str.of('bar fun bar fly').matchAll(/f(\w*)/)).toEqual(['un', 'ly']);
         });
-    })
+    });
 
     describe('test', (): void => {
         test('determines if a string matches the given regular expression pattern', (): void => {
@@ -2016,11 +2031,23 @@ describe('Fluent Strings', (): void => {
 
     describe('replaceMatches', (): void => {
         test('replaces all portions of a string matching a pattern with the given replacement string', (): void => {
-            expect(Str.of('(+1) 501-555-1000').replaceMatches('/[^A-Za-z0-9]+/', '').toString()).toEqual('15015551000');
+            expect(Str.of('foo bar baz').replaceMatches(/baz/, 'bar').toString()).toEqual('foo bar bar');
+            expect(Str.of('foo bar baz').replaceMatches(/404/, 'found').toString()).toEqual('foo bar baz');
         });
 
-        test('replaces all portions of a string matching a pattern with the given replacement string', (): void => {
-            expect(Str.of('123').replaceMatches('/\\d/', (match: string[]): string => '[' + match[0] + ']').toString()).toEqual('[1][2][3]');
+        test('replaces all portions of a string matching a pattern with the given array of replacement strings', (): void => {
+            expect(Str.of('foo bar baz').replaceMatches([/bar/, /baz/], ['XXX', 'YYY']).toString()).toEqual('foo XXX YYY');
+            expect(Str.of('foo bar baz').replaceMatches([/bar/, /baz/], ['XXX']).toString()).toEqual('foo XXX ');
+        });
+
+        test('replaces all portions of a string matching a pattern with the given callback as a replacement', (): void => {
+            expect(Str.of('123').replaceMatches(/\d/, (matches: string[]): string => `[${matches[0]}]`).toString()).toEqual('[1][2][3]');
+            expect(Str.of('foo baz bar').replaceMatches(/ba(.)/, (matches: [string, string]): string => `ba${(matches[1]).toUpperCase()}`).toString()).toEqual('foo baZ baR');
+        });
+
+        test('limits the number of replacements when "limit" value is provided', (): void => {
+            expect(Str.of('foo baz baz').replaceMatches(/ba(.)/, 'bar', 1).toString()).toEqual('foo bar baz');
+            expect(Str.of('123').replaceMatches(/\d/, (matches: string[]): string => `[${matches[0]}]`, 1).toString()).toEqual('[1]23');
         });
     });
 

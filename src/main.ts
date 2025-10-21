@@ -1705,22 +1705,47 @@ export class Str {
     /**
      * Replace the patterns matching the given regular expression.
      *
-     * @param { string } pattern
-     * @param { string | function } replace
+     * @param { RegExp | RegExp[] } pattern
+     * @param { string | string[] | ((match: string[]) => string) } replace
      * @param { string } subject
+     * @param { number } limit
      *
      * @return { string }
      */
-    static replaceMatches(pattern: string, replace: string | Function, subject: string): string {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
+    static replaceMatches(pattern: RegExp | RegExp[], replace: string | string[] | ((match: string[]) => string), subject: string, limit: number = -1): string {
+        const patterns: RegExp[] = Array.isArray(pattern) ? pattern : [pattern];
 
-        if (replace instanceof Function) {
-            subject = subject.replace(expression, (matched: string): string => matched);
-        }
+        patterns.forEach((pattern: RegExp, index: number) => {
+            const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
+            const expression: RegExp = new RegExp(pattern, flags);
+            let count: number = 0;
 
-        return subject.replace(expression, (replace as string));
+            if (replace instanceof Function) {
+                subject = subject.replace(expression, (substring: string, ...args: any[]): string => {
+                    if (limit < 0 || count < limit) {
+                        count++;
+
+                        return replace([substring, args[0]]);
+                    }
+
+                    return substring;
+                });
+            } else {
+                const replacement: string = Array.isArray(replace) ? replace[index] ?? '' : replace;
+
+                subject = subject.replace(expression, (match: string): string => {
+                    if (limit < 0 || count < limit) {
+                        count++;
+
+                        return replacement;
+                    }
+
+                    return match;
+                });
+            }
+        });
+
+        return subject;
     }
 
     /**
@@ -3856,21 +3881,14 @@ export class Stringable {
     /**
      * Replace the patterns matching the given regular expression.
      *
-     * @param { string } pattern
-     * @param { string | function } replace
+     * @param { RegExp | RegExp[] } pattern
+     * @param { string | string[] | ((match: string[]) => string) } replace
+     * @param { number } limit
      *
      * @return { Stringable }
      */
-    replaceMatches(pattern: string, replace: string | Function): Stringable {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
-
-        if (replace instanceof Function) {
-            this.#value.replace(expression, (matched: string): string => matched);
-        }
-
-        return new Stringable(this.#value.replace(expression, (replace as string)));
+    replaceMatches(pattern: RegExp | RegExp[], replace: string | string[] | ((match: string[]) => string), limit: number = -1): Stringable {
+        return new Stringable(Str.replaceMatches(pattern, replace, this.#value, limit));
     }
 
     /**
