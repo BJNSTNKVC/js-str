@@ -564,6 +564,38 @@ describe('Strings', (): void => {
             expect(Str.password()).toHaveLength(32);
             expect(Str.password(12)).toHaveLength(12);
         });
+
+        test('includes letters when "letters" when is set to true', (): void => {
+            expect(Str.password(12, true, false, false, false)).toMatch(/^[a-zA-Z]+$/);
+        });
+
+        test('excludes letters when "letters" when is set to false', (): void => {
+            expect(Str.password(12, false, true, true, true)).not.toMatch(/[a-zA-Z]/);
+        });
+
+        test('includes numbers when "numbers" when is set to true', (): void => {
+            expect(Str.password(12, false, true, false, false)).toMatch(/^\d+$/);
+        });
+
+        test('excludes numbers when "numbers" when is set to false', (): void => {
+            expect(Str.password(12, true, false, true, true)).not.toMatch(/\d/);
+        });
+
+        test('includes symbols when "symbols" when is set to true', (): void => {
+            expect(Str.password(12, false, false, true, false)).toMatch(/^[~!#$%^&*()\-_.,<>?\/\\{}[\]|:;]+$/);
+        });
+
+        test('excludes symbols when "symbols" when is set to false', (): void => {
+            expect(Str.password(12, true, true, false, true)).not.toMatch(/[~!#$%^&*()\-_.,<>?\/\\{}[\]|:;]/);
+        });
+
+        test('includes spaces when "spaces" when is set to true', (): void => {
+            expect(Str.password(12, true, true, true, true)).toContain(' ');
+        });
+
+        test('excludes spaces when "spaces" when is set to false', (): void => {
+            expect(Str.password(12, true, true, true, false)).not.toContain(' ');
+        });
     });
 
     describe('Str.position', (): void => {

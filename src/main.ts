@@ -1408,41 +1408,52 @@ export class Str {
      */
     static password(length: number = 32, letters: boolean = true, numbers: boolean = true, symbols: boolean = true, spaces: boolean = false): string {
         let password: string[] = [];
-        let collection: string[] = [];
+        let collection: Record<string, string[]> = {};
 
-        while (password.length < length) {
-            if (letters) {
-                collection = collection.concat([
-                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-                    'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                    'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                    'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                    'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                ]);
-            }
-
-            if (numbers) {
-                collection = collection.concat([
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                ]);
-            }
-
-            if (symbols) {
-                collection = collection.concat([
-                    '~', '!', '#', '$', '%', '^', '&', '*', '(', ')', '-',
-                    '_', '.', ',', '<', '>', '?', '/', '\\', '{', '}', '[',
-                    ']', '|', ':', ';',
-                ]);
-            }
-
-            if (spaces) {
-                collection = collection.concat([' ']);
-            }
-
-            password.push((collection[Math.floor(Math.random() * collection.length)] as string));
+        if (letters) {
+            collection.letters = [
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+                'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+                'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            ];
         }
 
-        return password.join('');
+        if (numbers) {
+            collection.numbers = [
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            ];
+        }
+
+        if (symbols) {
+            collection.symbols = [
+                '~', '!', '#', '$', '%', '^', '&', '*', '(', ')', '-',
+                '_', '.', ',', '<', '>', '?', '/', '\\', '{', '}', '[',
+                ']', '|', ':', ';',
+            ];
+        }
+
+        if (spaces) {
+            collection.spaces = [' '];
+        }
+
+        for (const option in collection) {
+            const options: string[] = collection[option] as string[];
+
+            password.push(options[Math.floor(Math.random() * options.length)] as string);
+        }
+
+        const options: string[] = Object.values(collection).flat();
+        length = length - password.length;
+
+        for (let i: number = 0; i < length; i++) {
+            const index: number = Math.floor(Math.random() * options.length);
+
+            password.push(options[index] as string);
+        }
+
+        return password.sort((): number => Math.random() - 0.5).reduce((previous: string, current: string): string => current + previous);
     }
 
     /**
