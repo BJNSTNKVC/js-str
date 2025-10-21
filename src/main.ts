@@ -778,18 +778,16 @@ export class Str {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      * @param { string } subject
      *
      * @return { string[] }
      */
-    static matchAll(pattern: string, subject: string): string[] {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
+    static matchAll(pattern: RegExp, subject: string): string[] {
+        const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
+        const expression: RegExp = new RegExp(pattern, flags);
 
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
-
-        const matches: RegExpMatchArray[] = [...subject.matchAll(new RegExp(expression, 'g'))];
+        const matches: RegExpMatchArray[] = [...subject.matchAll(expression)];
 
         if (matches.length === 0) {
             return [];
@@ -3613,11 +3611,11 @@ export class Stringable {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      *
      * @return { string[] }
      */
-    matchAll(pattern: string): string[] {
+    matchAll(pattern: RegExp): string[] {
         return Str.matchAll(pattern, this.#value);
     }
 

@@ -395,11 +395,15 @@ describe('Strings', (): void => {
 
     describe('Str.matchAll', (): void => {
         test('returns an array containing portions of a string that match a given regular expression pattern', (): void => {
-            expect(Str.matchAll('/bar/', 'bar foo bar')).toEqual(['bar', 'bar']);
+            expect(Str.matchAll(/bar/, 'bar foo bar')).toEqual(['bar', 'bar']);
+        });
+
+        test('returns an empty array when there are no matches', (): void => {
+            expect(Str.matchAll(/baz/, 'bar foo bar')).toEqual([]);
         });
 
         test('returns an array containing matches of a regular expression with a capturing group', (): void => {
-            expect(Str.matchAll('/f(\\w*)/', 'bar fun bar fly')).toEqual(['un', 'ly']);
+            expect(Str.matchAll(/f(\w*)/, 'bar fun bar fly')).toEqual(['un', 'ly']);
         });
     });
 
@@ -1732,13 +1736,17 @@ describe('Fluent Strings', (): void => {
 
     describe('matchAll', (): void => {
         test('returns an array containing portions of a string that match a given regular expression pattern', (): void => {
-            expect(Str.of('bar foo bar').matchAll('/bar/')).toEqual(['bar', 'bar']);
+            expect(Str.of('bar foo bar').matchAll(/bar/)).toEqual(['bar', 'bar']);
+        });
+
+        test('returns an empty array when there are no matches', (): void => {
+            expect(Str.of('bar foo bar').matchAll(/baz/)).toEqual([]);
         });
 
         test('returns an array containing matches of a regular expression with a capturing group', (): void => {
-            expect(Str.of('bar fun bar fly').matchAll('/f(\\w*)/')).toEqual(['un', 'ly']);
+            expect(Str.of('bar fun bar fly').matchAll(/f(\w*)/)).toEqual(['un', 'ly']);
         });
-    });
+    })
 
     describe('test', (): void => {
         test('determines if a string matches the given regular expression pattern', (): void => {
