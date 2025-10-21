@@ -648,13 +648,13 @@ Str.mask('taylor@example.com', '*', -15, 3);
 The `Str.match` method will return the portion of a string that matches a given regular expression pattern:
 
 ```js
-Str.match('/bar/', 'foo bar');
+Str.match(/bar/, 'foo bar');
 
 // 'bar'
 ```
 
 ```js
-Str.match('/foo (.*)/', 'foo bar');
+Str.match(/foo (.*)/, 'foo bar');
 
 // 'bar'
 ```
@@ -664,7 +664,7 @@ Str.match('/foo (.*)/', 'foo bar');
 The `Str.matchAll` method will return an array containing the portions of a string that match a given regular expression pattern:
 
 ```js
-Str.matchAll('/bar/', 'bar foo bar');
+Str.matchAll(/bar/, 'bar foo bar');
 
 // ['bar', 'bar']
 ```
@@ -672,7 +672,7 @@ Str.matchAll('/bar/', 'bar foo bar');
 If you specify a matching group within the expression, method will return an array of that group's matches:
 
 ```js
-Str.matchAll('/f(\\w*)/', 'bar fun bar fly');
+Str.matchAll(/f(\w*)/, 'bar fun bar fly');
 
 // ['un', 'ly'];
 ```
@@ -684,13 +684,13 @@ If no matches are found, an empty array will be returned.
 The `Str.isMatch` method will return true if the string matches a given regular expression:
 
 ```js
-Str.isMatch('/foo (.*)/', 'foo bar');
+Str.isMatch(/foo (.*)/, 'foo bar');
 
 // true
 ```
 
 ```js
-Str.isMatch('/foo (.*)/', 'laravel');
+Str.isMatch(/foo (.*)/, 'laravel');
 
 // false
 ```
@@ -715,7 +715,7 @@ If no matches are found, an empty string will be returned.
 
 #### Str.orderedUuid()
 
-The `Str.orderedUuid` method generates a "timestamp first" UUID that may be efficiently stored in an indexed database column. 
+The `Str.orderedUuid` method generates a "timestamp first" UUID that may be efficiently stored in an indexed database column.
 Each UUID that is generated using this method will be sorted after UUIDs previously generated using the method:
 
 ```js
@@ -955,7 +955,7 @@ Str.replaceLast('the', 'a', 'the quick brown fox jumps over the lazy dog');
 The `Str.replaceMatches` method replaces all portions of a string matching a pattern with the given replacement string:
 
 ```js
-Str.replaceMatches('/[^A-Za-z0-9]+/', '', '(+1) 501-555-1000');
+Str.replaceMatches(/[^A-Za-z0-9]+/, '', '(+1) 501-555-1000');
 
 // '15015551000'
 ```
@@ -963,7 +963,7 @@ Str.replaceMatches('/[^A-Za-z0-9]+/', '', '(+1) 501-555-1000');
 The `replaceMatches` method also accepts a closure that will be invoked with each portion of the string matching the given pattern, allowing you to perform the replacement logic within the closure and return the replaced value:
 
 ```js
-Str.replaceMatches('/\\d/', (matches) => '[' + matches[0] + ']', '123');
+Str.replaceMatches(/\d/, (matches) => '[' + matches[0] + ']', '123');
 
 // '[1][2][3]'
 ```
@@ -2122,13 +2122,13 @@ Str.of('taylor@example.com').mask('*', 4, -4);
 The `match` method will return the portion of a string that matches a given regular expression pattern:
 
 ```js
-Str.of('foo bar').match('/bar/');
+Str.of('foo bar').match(/bar/);
 
 // 'bar'
 ```
 
 ```js
-Str.of('foo bar').match('/foo (.*)/');
+Str.of('foo bar').match(/foo (.*)/);
 
 // 'bar'
 ```
@@ -2139,7 +2139,7 @@ The `matchAll` method will return an array containing the portions of a string t
 pattern:
 
 ```js
-Str.of('bar foo bar').matchAll('/bar/');
+Str.of('bar foo bar').matchAll(/bar/);
 
 // ['bar', 'bar']
 ```
@@ -2147,7 +2147,7 @@ Str.of('bar foo bar').matchAll('/bar/');
 If you specify a matching group within the expression, method will return an array of that group's matches:
 
 ```js
-Str.of('bar fun bar fly').matchAll('/f(\\w*)/');
+Str.of('bar fun bar fly').matchAll(/f(\w*)/);
 
 // ['un', 'ly'];
 ```
@@ -2159,13 +2159,13 @@ If no matches are found, an empty array will be returned.
 The `isMatch` method will return true if the string matches a given regular expression:
 
 ```js
-Str.of('foo bar').isMatch('/foo (.*)/');
+Str.of('foo bar').isMatch(/foo (.*)/);
 
 // true
 ```
 
 ```js
-Str.of('laravel').isMatch('/foo (.*)/');
+Str.of('laravel').isMatch(/foo (.*)/);
 
 // false
 ```
@@ -2281,20 +2281,6 @@ Str.of('foo').pipe(string => 'bar');
 // 'bar'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('LARAVEL FRAMEWORK').pipe((string: Stringable) => string.title());
-
-// 'Laravel Framework'
-```
-
-```ts
-Str.of('foo').pipe((string: Stringable) => 'bar');
-
-// 'bar'
-```
-
 #### plural
 
 The `plural` method converts a singular word string to its plural form.
@@ -2357,7 +2343,7 @@ Str.of('VerifiedHuman').pluralPascal(1);
 
 #### position
 
-The `position` method returns the position of the first occurrence of a substring in a string. 
+The `position` method returns the position of the first occurrence of a substring in a string.
 If the substring does not exist within the string, `false` is returned:
 
 ```js
@@ -2469,16 +2455,16 @@ Str.of('the quick brown fox jumps over the lazy dog').replaceLast('the', 'a');
 The `replaceMatches` method replaces all portions of a string matching a pattern with the given replacement string:
 
 ```js
-Str.of('(+1) 501-555-1000').replaceMatches('/[^A-Za-z0-9]+/', '');
+Str.of('(+1) 501-555-1000').replaceMatches(/[^A-Za-z0-9]+/, '');
 
 // '15015551000'
 ```
 
-The `replaceMatches` method also accepts a closure that will be invoked with each portion of the string matching the given pattern, 
+The `replaceMatches` method also accepts a closure that will be invoked with each portion of the string matching the given pattern,
 allowing you to perform the replacement logic within the closure and return the replaced value:
 
 ```js
-Str.of('123').replaceMatches('/\\d/', (match) => '[' + match[0] + ']');
+Str.of('123').replaceMatches(/\d/, (match) => '[' + match[0] + ']');
 
 // '[1][2][3]'
 ```
@@ -2574,7 +2560,7 @@ Str.of('fooBar').snake();
 The `split` method splits a string into an array using a regular expression:
 
 ```js
-Str.of('one, two, three').split('/[\s,]+/');
+Str.of('one, two, three').split(/[\s,]+/);
 
 // ["one", "two", "three"]
 ```
@@ -2703,7 +2689,7 @@ Str.of('Laravel Framework').substr(8, 5);
 
 #### substrReplace
 
-The `substrReplace` method replaces text within a portion of a string, starting at the position specified by the second argument and replacing the number of characters specified by the third argument. 
+The `substrReplace` method replaces text within a portion of a string, starting at the position specified by the second argument and replacing the number of characters specified by the third argument.
 Passing `0` to the method's third argument will insert the string at the specified position without replacing any of the existing characters in the string:
 
 ```js
@@ -2752,14 +2738,6 @@ Str.of('Laravel')
 // 'LARAVEL FRAMEWORK'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('Laravel')
-    .append(' Framework')
-    .tap((string: Stringable) => string.dump())
-    .upper();
-
 // 'LARAVEL FRAMEWORK'
 ```
 
@@ -2768,7 +2746,7 @@ Str.of('Laravel')
 The `test` method determines if a string matches the given regular expression pattern:
 
 ```js
-Str.of('Laravel Framework').test('/Laravel/');
+Str.of('Laravel Framework').test(/Laravel/);
 
 // true
 ```
@@ -2884,27 +2862,11 @@ Str.of('Taylor').when(true, (string) => string.append(' Otwell'));
 // 'Taylor Otwell'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('Taylor').when(true, (string: Stringable) => string.append(' Otwell'));
-
-// 'Taylor Otwell'
-```
-
-If necessary, you may pass another closure as the third parameter to the `when` method. 
+If necessary, you may pass another closure as the third parameter to the `when` method.
 This closure will execute if the condition parameter evaluates to false.
 
 ```js
 Str.of('Taylor').when(false, (string) => string.append(' Otwell'), (string) => string.append(' Swift'));
-
-// 'Taylor Swift'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('Taylor').when(false, (string: Stringable): Stringable => string.append(' Otwell'), (string: Stringable): Stringable => string.append(' Swift'));
 
 // 'Taylor Swift'
 ```
@@ -2916,14 +2878,6 @@ The closure will receive the fluent string instance:
 
 ```js
 Str.of('Taylor').unless(false, (string) => string.append(' Otwell'));
-
-// 'Taylor Otwell'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('Taylor').unless(false, (string: Stringable) => string.append(' Otwell'));
 
 // 'Taylor Otwell'
 ```
@@ -2942,26 +2896,10 @@ Str.of('tony stark').whenContains('tony', (string) => string.title());
 // 'Tony Stark'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('tony stark').whenContains('tony', (string: Stringable) => string.title());
-
-// 'Tony Stark'
-```
-
 You may also pass an array of values to determine if the given string contains any of the values in the array:
 
 ```js
 Str.of('tony stark').whenContains(['tony', 'hulk'], (string) => string.title());
-
-// Tony Stark
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('tony stark').whenContains(['tony', 'hulk'], (string: Stringable) => string.title());
 
 // Tony Stark
 ```
@@ -2971,19 +2909,11 @@ This closure will execute if the condition parameter evaluates to false.
 
 #### whenContainsAll
 
-The `whenContainsAll` method invokes the given closure if the string contains all the given sub-strings. 
+The `whenContainsAll` method invokes the given closure if the string contains all the given sub-strings.
 The closure will receive the fluent string instance:
 
 ```js
 Str.of('tony stark').whenContainsAll(['tony', 'stark'], (string) => string.title());
-
-// 'Tony Stark'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('tony stark').whenContainsAll(['tony', 'stark'], (string: Stringable) => string.title());
 
 // 'Tony Stark'
 ```
@@ -2993,7 +2923,7 @@ This closure will execute if the condition parameter evaluates to false.
 
 #### whenEmpty
 
-The `whenEmpty` method invokes the given closure if the string is empty. 
+The `whenEmpty` method invokes the given closure if the string is empty.
 If the closure returns a value, that value will also be returned by the `whenEmpty` method.
 If the closure does not return a value, the fluent string instance will be returned:
 
@@ -3006,18 +2936,10 @@ Str.of('  ').whenEmpty((string) => string.trim().prepend('Laravel'));
 If necessary, you may pass another closure as the third parameter to the `whenEmpty` method.
 This closure will execute if the condition parameter evaluates to false.
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('  ').whenEmpty((string: Stringable) => string.trim().prepend('Laravel'));
-
-// 'Laravel'
-```
-
 #### whenNotEmpty
 
-The `whenNotEmpty` method invokes the given closure if the string is not empty. 
-If the closure returns a value, that value will also be returned by the `whenNotEmpty` method. 
+The `whenNotEmpty` method invokes the given closure if the string is not empty.
+If the closure returns a value, that value will also be returned by the `whenNotEmpty` method.
 If the closure does not return a value, the fluent string instance will be returned:
 
 ```js
@@ -3028,14 +2950,6 @@ Str.of('Framework').whenNotEmpty((string) => string.prepend('Laravel '));
 
 If necessary, you may pass another closure as the third parameter to the `whenNotEmpty` method.
 This closure will execute if the condition parameter evaluates to false.
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('Framework').whenNotEmpty((string: Stringable) => string.prepend('Laravel '));
-
-// 'Laravel Framework'
-```
 
 #### whenStartsWith
 
@@ -3048,26 +2962,10 @@ Str.of('disney world').whenStartsWith('disney', (string) => string.title());
 // 'Disney World'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenStartsWith('disney', (string: Stringable) => string.title());
-
-// 'Disney World'
-```
-
 You may also pass an array of values to determine if the given string contains any of the values in the array:
 
 ```js
 Str.of('disney world').whenStartsWith(['hello', 'disney'], (string) => string.title());
-
-// 'Disney World'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenStartsWith(['hello', 'disney'], (string: Stringable) => string.title());
 
 // 'Disney World'
 ```
@@ -3086,28 +2984,12 @@ Str.of('disney world').whenDoesntStartWith('hello', (string) => string.title());
 // 'Disney World'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenDoesntStartWith('hello', (string: Stringable) => string.title());
-
-// 'Disney World'
-```
-
 You may also pass an array of values to determine if the given string does not contain any of the values in the array:
 
 ```js
 Str.of('disney world').whenDoesntStartWith(['hello', 'world'], (string: Stringable) => string.title());
 
 // Tony Stark
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenDoesntStartWith(['hello', 'world'], (string: Stringable) => string.title());
-
-// 'Disney World'
 ```
 
 If necessary, you may pass another closure as the third parameter to the `whenDoesntStartWith` method.
@@ -3124,14 +3006,6 @@ Str.of('disney world').whenEndsWith('world', (string) => string.title());
 // 'Disney World'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenEndsWith('world', (string: Stringable) => string.title());
-
-// 'Disney World'
-```
-
 #### whenDoesntEndWith
 
 The `whenDoesntEndWith` method determines if the given string doesn't end with a given substring:
@@ -3139,14 +3013,6 @@ The closure will receive the fluent string instance:
 
 ```js
 Str.of('disney world').whenDoesntEndWith('land', (string) => string.title());
-
-// 'Disney World'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenDoesntEndWith('land', (string: Stringable) => string.title());
 
 // 'Disney World'
 ```
@@ -3159,14 +3025,6 @@ Str.of('disney world').whenDoesntEndWith(['land', 'moon'], (string) => string.ti
 // true
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('disney world').whenDoesntEndWith(['land', 'moon'], (string: Stringable) => string.title());
-
-// 'Disney World'
-```
-
 If necessary, you may pass another closure as the third parameter to the `whenDoesntEndWith` method.
 This closure will execute if the condition parameter evaluates to false.
 
@@ -3177,14 +3035,6 @@ The closure will receive the fluent string instance:
 
 ```js
 Str.of('laravel').whenExactly('laravel', (string) => string.title());
-
-// 'Laravel'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('laravel').whenExactly('laravel', (string: Stringable) => string.title());
 
 // 'Laravel'
 ```
@@ -3203,33 +3053,17 @@ Str.of('framework').whenNotExactly('laravel', (string) => string.title());
 // 'Framework'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('framework').whenNotExactly('laravel', (string: Stringable) => string.title());
-
-// 'Framework'
-```
-
 If necessary, you may pass another closure as the third parameter to the `whenNotExactly` method.
 This closure will execute if the condition parameter evaluates to false.
 
 #### whenIs
 
-The `whenIs` method invokes the given closure if the string matches a given pattern. 
+The `whenIs` method invokes the given closure if the string matches a given pattern.
 Asterisks may be used as wildcard values.
 The closure will receive the fluent string instance:
 
 ```js
 Str.of('foo/bar').whenIs('foo/*', (string) => string.append('/baz'));
-
-// 'foo/bar/baz'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('foo/bar').whenIs('foo/*', (string: Stringable) => string.append('/baz'));
 
 // 'foo/bar/baz'
 ```
@@ -3248,14 +3082,6 @@ Str.of('laravel').whenIsAscii((string) => string.title());
 // 'Laravel'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('laravel').whenIsAscii((string: Stringable) => string.title());
-
-// 'Laravel'
-```
-
 If necessary, you may pass another closure as the third parameter to the `whenIsAscii` method.
 This closure will execute if the condition parameter evaluates to false.
 
@@ -3266,14 +3092,6 @@ The closure will receive the fluent string instance:
 
 ```js
 Str.of('01gd6r360bp37zj17nxb55yv40').whenIsUlid((string) => string.substr(0, 8));
-
-// '01gd6r36'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('01gd6r360bp37zj17nxb55yv40').whenIsUlid((string: Stringable) => string.substr(0, 8));
 
 // '01gd6r36'
 ```
@@ -3292,14 +3110,6 @@ Str.of('a0a2a2d2-0b87-4a18-83f2-2529882be2de').whenIsUuid((string) => string.sub
 // 'a0a2a2d2'
 ```
 
-Or, if you are using TypeScript:
-
-```ts
-Str.of('a0a2a2d2-0b87-4a18-83f2-2529882be2de').whenIsUuid((string: Stringable) => string.substr(0, 8));
-
-// 'a0a2a2d2'
-```
-
 If necessary, you may pass another closure as the third parameter to the `whenIsUuid` method.
 This closure will execute if the condition parameter evaluates to false.
 
@@ -3309,15 +3119,7 @@ The `whenTest` method invokes the given closure if the string matches the given 
 The closure will receive the fluent string instance:
 
 ```js
-Str.of('laravel framework').whenTest('/laravel/', (string) => string.title());
-
-// 'Laravel Framework'
-```
-
-Or, if you are using TypeScript:
-
-```ts
-Str.of('laravel framework').whenTest('/laravel/', (string: Stringable) => string.title());
+Str.of('laravel framework').whenTest(/laravel/, (string) => string.title());
 
 // 'Laravel Framework'
 ```
