@@ -683,9 +683,19 @@ describe('Strings', (): void => {
     describe('Str.replace', (): void => {
         test('replaces a given string within the string', (): void => {
             expect(Str.replace('9.x', '10.x', 'Laravel 9.x')).toEqual('Laravel 10.x');
-            expect(Str.replace('framework', 'Laravel', 'Framework 10.x', false)).toEqual('Laravel 10.x');
         });
-    });
+
+        test('replaces a given string within the string case-insensitively', (): void => {
+            expect(Str.replace('framework', 'Laravel', 'Framework 10.x', false)).toEqual('Laravel 10.x');
+            expect(Str.replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], '?1 ?2 ?3')).toEqual('foo bar baz');
+            expect(Str.replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], ['?1', '?2', '?3'])).toEqual(['foo', 'bar', 'baz']);
+        });
+
+        test('replaces a given array of strings within the given array of strings', (): void => {
+            expect(Str.replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], '?1 ?2 ?3')).toEqual('foo bar baz');
+            expect(Str.replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], ['?1', '?2', '?3'])).toEqual(['foo', 'bar', 'baz']);
+        });
+    })
 
     describe('Str.replaceFirst', (): void => {
         test('replaces the first occurrence of a given value in a string', (): void => {
@@ -2021,7 +2031,16 @@ describe('Fluent Strings', (): void => {
         test('replaces a given string within the string', (): void => {
             expect(Str.of('Laravel 9.x').replace('9.x', '10.x').toString()).toEqual('Laravel 10.x');
         });
-    });
+
+        test('replaces a given string within the string case-insensitively', (): void => {
+            expect(Str.of('Framework 10.x').replace('framework', 'Laravel', false).toString()).toEqual('Laravel 10.x');
+            expect(Str.of('?1 ?2 ?3').replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz']).toString()).toEqual('foo bar baz');
+        });
+
+        test('replaces a given array of strings within the given array of strings', (): void => {
+            expect(Str.of('?1 ?2 ?3').replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz']).toString()).toEqual('foo bar baz');
+        });
+    })
 
     describe('replaceArray', (): void => {
         test('replaces a given value in the string sequentially using an array', (): void => {

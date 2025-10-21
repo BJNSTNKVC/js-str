@@ -1605,21 +1605,28 @@ export class Str {
      * Replace the given value in the given string.
      *
      * @param { string | string[] } search
-     * @param { string } replace
-     * @param { string } subject
+     * @param { string | string[] } replace
+     * @param { string | string[] } subject
      * @param { boolean } caseSensitive
      *
-     * @return { string }
+     * @return { string | string[] }
      */
-    static replace(search: string | string[], replace: string, subject: string, caseSensitive: boolean = true): string {
+    static replace(search: string | string[], replace: string | string[], subject: string, caseSensitive?: boolean): string;
+    static replace(search: string | string[], replace: string | string[], subject: string[], caseSensitive?: boolean): string[];
+    static replace(search: string | string[], replace: string | string[], subject: string | string[], caseSensitive: boolean = true): string | string[] {
         search = Array.isArray(search) ? search : [search];
 
-        search.forEach((term: string | RegExp): void => {
-            if (!caseSensitive) {
-                term = new RegExp(term, 'gi');
-            }
+        search.forEach((term: string | RegExp, index: number): void => {
+            const $subject: string = Array.isArray(subject) ? subject[index] ?? '' : subject;
+            const $replace: string = Array.isArray(replace) ? replace[index] ?? '' : replace;
+            const pattern: string | RegExp = caseSensitive ? term : new RegExp(term, 'gi');
+            const replacement: string = $subject.replaceAll(pattern, $replace);
 
-            subject = subject.replaceAll(term, replace);
+            if (Array.isArray(subject)) {
+                subject[index] = replacement;
+            } else {
+                subject = replacement;
+            }
         });
 
         return subject;
@@ -3820,12 +3827,12 @@ export class Stringable {
      * Replace the given value in the given string.
      *
      * @param { string | string[] } search
-     * @param { string } replace
+     * @param { string | string[] } replace
      * @param { boolean } caseSensitive
      *
      * @return { Stringable }
      */
-    replace(search: string | string[], replace: string, caseSensitive: boolean = true): Stringable {
+    replace(search: string | string[], replace: string | string[], caseSensitive: boolean = true): Stringable {
         return new Stringable(Str.replace(search, replace, this.#value, caseSensitive));
     }
 
