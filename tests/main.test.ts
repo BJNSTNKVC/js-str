@@ -1595,9 +1595,44 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('dirname', (): void => {
-        test('return the parent directory portion of the given string', (): void => {
+        test('returns the parent directory portion of the given string', (): void => {
             expect(Str.of('/foo/bar/baz').dirname().toString()).toEqual('/foo/bar');
             expect(Str.of('/foo/bar/baz').dirname(2).toString()).toEqual('/foo');
+        });
+
+        test('handles Windows-style paths', (): void => {
+            expect(Str.of('C:\\foo\\bar\\baz').dirname().toString()).toEqual('C:\\foo\\bar');
+            expect(Str.of('C:\\foo\\bar\\baz').dirname(2).toString()).toEqual('C:\\foo');
+        });
+
+        test('returns current directory for single-level paths', (): void => {
+            expect(Str.of('file.txt').dirname().toString()).toEqual('.');
+            expect(Str.of('C:file.txt').dirname().toString()).toEqual('.');
+        });
+
+        test('handles root directory', (): void => {
+            expect(Str.of('/file.txt').dirname().toString()).toEqual('/');
+            expect(Str.of('C:\\file.txt').dirname().toString()).toEqual('C:\\');
+        });
+
+        test('handles multiple levels up', (): void => {
+            expect(Str.of('/a/b/c/d').dirname(2).toString()).toEqual('/a/b');
+            expect(Str.of('C:\\a\\b\\c\\d').dirname(3).toString()).toEqual('C:\\a');
+        });
+
+        test('returns root when levels exceed path depth', (): void => {
+            expect(Str.of('/a/b').dirname(5).toString()).toEqual('/');
+            expect(Str.of('C:\\a\\b').dirname(5).toString()).toEqual('C:\\');
+        });
+
+        test('handles empty string', (): void => {
+            expect(Str.of('').dirname().toString()).toEqual('.');
+        });
+
+        test('handles edge cases', (): void => {
+            expect(Str.of('a').dirname().toString()).toEqual('.');
+            expect(Str.of('//').dirname().toString()).toEqual('/');
+            expect(Str.of('C:/foo\\bar/baz').dirname().toString()).toEqual('C:/foo\\bar');
         });
     });
 

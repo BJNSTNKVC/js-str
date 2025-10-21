@@ -3368,31 +3368,29 @@ export class Stringable {
      * @return { Stringable }
      */
     dirname(levels: number = 1): Stringable {
-        let dirname: string = this.#value;
-        let parts: string[] = [];
-        let isValidDirname: boolean = false;
-        let hasValidLevels: boolean = false;
+        const separator: string = this.#value.includes('/') ? '/' : '\\';
+        let parts: string[] = this.#value.split(separator);
 
-        if (this.#value.split('/')[0] !== this.#value) {
-            parts = this.#value.split('/');
-            dirname = parts.slice(0, parts.length - levels).join('/');
-            isValidDirname = true;
-            hasValidLevels = parts.length <= levels + 1;
+        if (parts.length <= levels) {
+            if (this.#value.startsWith(separator)) {
+                return new Stringable(separator);
+            }
+
+            if (this.#value.match(/^[a-zA-Z]:\\/)) {
+                return new Stringable(parts[0] + '\\');
+            }
+
+            return new Stringable('.');
         }
 
-        if (this.#value.split('\\')[0] !== this.#value) {
-            parts = this.#value.split('\\');
-            dirname = parts.slice(0, parts.length - levels).join('\\');
-            isValidDirname = true;
-            hasValidLevels = parts.length <= levels + 1;
+        let dirname: string = parts.slice(0, -levels).join(separator);
+
+        if (!dirname) {
+            dirname = separator;
         }
 
-        if (!isValidDirname) {
-            dirname = '.';
-        }
-
-        if (isValidDirname && hasValidLevels) {
-            dirname = '\\';
+        if (separator === '\\' && dirname.endsWith(':')) {
+            dirname += '\\';
         }
 
         return new Stringable(dirname);
