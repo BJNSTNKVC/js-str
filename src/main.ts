@@ -3468,24 +3468,27 @@ export class Stringable {
     /**
      * Split a string using a regular expression or by length.
      *
-     * @param { string } pattern
+     * @param { RegExp | number } pattern
      * @param { number } limit
      *
      * @return { string[] }
      */
-    split(pattern: string, limit: number = -1): string[] {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
+    split(pattern: RegExp | number, limit: number = -1): string[] {
+        if (typeof pattern === 'number') {
+            return [...(this.#value.trim().match(new RegExp(`.{1,${pattern}}`, 'g')) ?? [])];
+        }
 
-        let segments: string[] = this.#value.split(expression);
+        const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
+        const expression: RegExp = new RegExp(pattern, flags);
 
-        if (limit !== -1) {
+        let segments: string[] = this.#value.trim().split(expression);
+
+        if (limit > 0) {
             const position: number = limit - 1 >= segments.length
                 ? segments.length - 1
                 : limit - 1;
 
-            segments = [...segments.slice(0, position), segments.splice(position).join('')];
+            segments = [...segments.slice(0, position), segments.splice(position).join(' ')];
         }
 
         return segments.map((segment: string): string => segment.trim()) ?? [];
@@ -5045,34 +5048,6 @@ export class HtmlString {
         }
 
         return html;
-    }
-}
-
-class RegExpString {
-    /**
-     * Build the Regular Expression string from the given parameter.
-     *
-     * @param { RegExp } pattern
-     * @param { string } string
-     *
-     * @return { string }
-     */
-    static make(pattern: RegExp, string: string): string {
-        if (string === '') {
-            throw new Error('Empty regular expression.');
-        }
-
-        if (!string.startsWith('/')) {
-            throw new Error('Delimiter must not be alphanumeric, backslash, or NUL.');
-        }
-
-        if (string.startsWith('/') && string.length === 1 || !string.endsWith('/')) {
-            throw new Error('No ending delimiter \'/\'.');
-        }
-
-        const expression: RegExpExecArray | null = new RegExp(pattern).exec(string);
-
-        return expression ? expression[1]! : '';
     }
 }
 

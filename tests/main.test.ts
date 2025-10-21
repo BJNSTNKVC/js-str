@@ -1696,9 +1696,29 @@ describe('Fluent Strings', (): void => {
 
     describe('split', (): void => {
         test('splits a string into an array using a regular expression', (): void => {
-            expect(Str.of('one, two, three').split('/[\s,]+/')).toEqual(['one', 'two', 'three']);
+            expect(Str.of('one, two, three').split(/[\s,]+/)).toEqual(['one', 'two', 'three']);
         });
-    });
+
+        test('splits a string into an array using a number', (): void => {
+            expect(Str.of('foobarbaz').split(3)).toEqual(['foo', 'bar', 'baz']);
+        });
+
+        test('handles the "limit" value correctly', (): void => {
+            expect(Str.of('one two three four').split(/ /, 2)).toEqual(['one', 'two three four']);
+            expect(Str.of('one two three').split(/ /, 3)).toEqual(['one', 'two', 'three']);
+            expect(Str.of('one two').split(/ /, 5)).toEqual(['one', 'two']);
+            expect(Str.of('one two three').split(/ /, 1)).toEqual(['one two three']);
+        });
+
+        test('handles regex patterns', (): void => {
+            expect(Str.of('ONE, TWO, THREE').split(/[\s,]+/i)).toEqual(['ONE', 'TWO', 'THREE']);
+            expect(Str.of('one1two2three').split(/\d+/)).toEqual(['one', 'two', 'three']);
+        });
+
+        test('trims whitespace from results', (): void => {
+            expect(Str.of(' one ,  two  , three ').split(/\s*,\s*/)).toEqual(['one', 'two', 'three']);
+        });
+    })
 
     describe('finish', (): void => {
         test('adds a single instance of the given value to a string if it does not already end with that value', (): void => {
