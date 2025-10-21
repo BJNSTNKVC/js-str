@@ -96,9 +96,7 @@ export class Str {
      * @return { string }
      */
     static ascii(value: string): string {
-        return value.normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-zA-Z0-9]/g, '');
+        return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
     /**
@@ -136,7 +134,7 @@ export class Str {
             return subject;
         }
 
-        const position: number | null = subject.lastIndexOf(search) ?? null;
+        const position: number = subject.lastIndexOf(search);
 
         if (position === -1) {
             return subject;
@@ -362,6 +360,9 @@ export class Str {
 
                 break;
             }
+            default: {
+                throw new Error('Argument #2 (mode) must be one of the Mode.MB_CASE_* constants');
+            }
         }
 
         return string;
@@ -421,13 +422,11 @@ export class Str {
     static excerpt(text: string, phrase: string = '', options: ExcerptOptions = {}): string | null {
         const radius: number = options.radius ?? 100;
         const omission: string = options.omission ?? '...';
-        const results: string[] = text.split(phrase);
+        const matches: RegExpMatchArray | null = text.match(new RegExp(`^(.*?)(${preg_quote(phrase)})(.*)$`, 'iu'));
 
-        if (results.length === 1) {
+        if (matches === null) {
             return null;
         }
-
-        const matches: string[] = [text, (results[0] as string), phrase, results.splice(1).join(phrase)];
 
         let start: string = (matches[1] as string).trimStart();
         let end: string = (matches[3] as string).trimEnd();
@@ -446,7 +445,7 @@ export class Str {
                 (endWithRadius: Stringable): Stringable => endWithRadius.append(omission))
             .toString();
 
-        return (start + ' ' + matches[2] + end).replace(/\s+/g, ' ').trim();
+        return this.of(start).append(matches[2] as string, end).toString();
     }
 
     /**
@@ -518,7 +517,7 @@ export class Str {
 
             pattern = pattern.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/\\\*/g, '.*');
 
-            const regex: RegExp = new RegExp('^' + pattern + '$', ignoreCase ? 'iu' : 'u');
+            const regex: RegExp = new RegExp(`^${pattern}$`, ignoreCase ? 'iu' : 'u');
 
             if (regex.test(value)) {
                 return true;
@@ -565,9 +564,9 @@ export class Str {
      * @return { boolean }
      */
     static isUrl(value: string, protocols: string[] = []): boolean {
-        const protocolPattern: string = protocols.length === 0 ? 'https?|ftp|file|mailto|tel|data|irc|magnet' : protocols.join('|');
+        const protocol: string = protocols.length === 0 ? 'https?|ftp|file|mailto|tel|data|irc|magnet' : protocols.join('|');
 
-        const pattern: RegExp = new RegExp(`^(?:${protocolPattern}):\\/\\/(?:[\\w-]+(?:\\.[\\w-]+)+|localhost|\\d{1,3}(?:\\.\\d{1,3}){3})(?::\\d+)?(?:\\S*)?$`, 'i');
+        const pattern: RegExp = new RegExp(`^(?:${protocol}):\\/\\/(?:[\\w-]+(?:\\.[\\w-]+)+|localhost|\\d{1,3}(?:\\.\\d{1,3}){3})(?::\\d+)?(?:\\S*)?$`, 'i');
 
         return pattern.test(value);
     }
@@ -591,6 +590,10 @@ export class Str {
      * @return { boolean }
      */
     static isUlid(value: string): boolean {
+        if (typeof value !== 'string') {
+            return false;
+        }
+
         if (value.length !== 26) {
             return false;
         }
@@ -599,7 +602,7 @@ export class Str {
             return false;
         }
 
-        return Number(value.charAt(0)) <= 7;
+        return parseInt(value.charAt(0)) <= 7;
     }
 
     /**
@@ -737,19 +740,15 @@ export class Str {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      * @param { string } subject
      *
      * @return { string }
      */
-    static match(pattern: string, subject: string): string {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags);
+    static match(pattern: RegExp, subject: string): string {
+        const matches: RegExpExecArray | null = pattern.exec(subject);
 
-        const matches: RegExpMatchArray | null = RegExp(expression).exec(subject);
-
-        if (!matches) {
+        if (matches === null) {
             return '';
         }
 
@@ -759,26 +758,18 @@ export class Str {
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | string[] } pattern
+     * @param { RegExp | RegExp[] } pattern
      * @param { string } value
      *
      * @return { boolean }
      */
-    static isMatch(pattern: string | string[], value: string): boolean {
+    static isMatch(pattern: RegExp | RegExp[], value: string): boolean {
         let result: boolean = false;
 
         pattern = Array.isArray(pattern) ? pattern : [pattern];
 
-        pattern.forEach((item: string): void => {
-            if (item === value) {
-                result = true;
-            }
-
-            let body: string = (/^\/(.*)\/\w*$/.exec(item) as string[])[1] as string;
-            let flags: string = (/^\/.*\/(\w*)$/.exec(item) as string[])[1] as string;
-            let expression: RegExp = new RegExp(body, flags);
-
-            if (expression.exec(value)) {
+        pattern.forEach((item: RegExp): void => {
+            if (item.exec(value)) {
                 result = true;
             }
         });
@@ -789,18 +780,16 @@ export class Str {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      * @param { string } subject
      *
      * @return { string[] }
      */
-    static matchAll(pattern: string, subject: string): string[] {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
+    static matchAll(pattern: RegExp, subject: string): string[] {
+        const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
+        const expression: RegExp = new RegExp(pattern, flags);
 
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
-
-        const matches: RegExpMatchArray[] = [...subject.matchAll(new RegExp(expression, 'g'))];
+        const matches: RegExpMatchArray[] = [...subject.matchAll(expression)];
 
         if (matches.length === 0) {
             return [];
@@ -881,7 +870,7 @@ export class Str {
         }
 
         // List of rules for plural words.
-        const plural: { [key: string]: string } = {
+        const plural: Record<string, string> = {
             // Special cases (unchanged plurals)
             '^(.*)menu$': '$1menus',
             '^tights$'  : 'tights',
@@ -985,7 +974,7 @@ export class Str {
         };
 
         // List of words that change irregularly.
-        const irregular: { [key: string]: string } = {
+        const irregular: Record<string, string> = {
             // A
             'abuse'    : 'abuses',
             'alumna'   : 'alumnae',
@@ -1421,41 +1410,52 @@ export class Str {
      */
     static password(length: number = 32, letters: boolean = true, numbers: boolean = true, symbols: boolean = true, spaces: boolean = false): string {
         let password: string[] = [];
-        let collection: string[] = [];
+        let collection: Record<string, string[]> = {};
 
-        while (password.length < length) {
-            if (letters) {
-                collection = collection.concat([
-                    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-                    'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                    'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
-                    'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                    'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-                ]);
-            }
-
-            if (numbers) {
-                collection = collection.concat([
-                    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                ]);
-            }
-
-            if (symbols) {
-                collection = collection.concat([
-                    '~', '!', '#', '$', '%', '^', '&', '*', '(', ')', '-',
-                    '_', '.', ',', '<', '>', '?', '/', '\\', '{', '}', '[',
-                    ']', '|', ':', ';',
-                ]);
-            }
-
-            if (spaces) {
-                collection = collection.concat([' ']);
-            }
-
-            password.push((collection[Math.floor(Math.random() * collection.length)] as string));
+        if (letters) {
+            collection.letters = [
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+                'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+                'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+                'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+            ];
         }
 
-        return password.join('');
+        if (numbers) {
+            collection.numbers = [
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            ];
+        }
+
+        if (symbols) {
+            collection.symbols = [
+                '~', '!', '#', '$', '%', '^', '&', '*', '(', ')', '-',
+                '_', '.', ',', '<', '>', '?', '/', '\\', '{', '}', '[',
+                ']', '|', ':', ';',
+            ];
+        }
+
+        if (spaces) {
+            collection.spaces = [' '];
+        }
+
+        for (const option in collection) {
+            const options: string[] = collection[option] as string[];
+
+            password.push(options[Math.floor(Math.random() * options.length)] as string);
+        }
+
+        const options: string[] = Object.values(collection).flat();
+        length = length - password.length;
+
+        for (let i: number = 0; i < length; i++) {
+            const index: number = Math.floor(Math.random() * options.length);
+
+            password.push(options[index] as string);
+        }
+
+        return password.sort((): number => Math.random() - 0.5).reduce((previous: string, current: string): string => current + previous);
     }
 
     /**
@@ -1582,46 +1582,31 @@ export class Str {
     }
 
     /**
-     * Convert the given value to a string or return the given fallback on failure.
-     *
-     * @param { * } value
-     * @param { string } fallback
-     *
-     * @return { string }
-     */
-    static toStringOr(value: any, fallback: string): string {
-        try {
-            let result: string = String(value);
-
-            if (result === 'undefined' || result === 'null') {
-                return fallback;
-            }
-
-            return result;
-        } catch {
-            return fallback;
-        }
-    }
-
-    /**
      * Replace the given value in the given string.
      *
      * @param { string | string[] } search
-     * @param { string } replace
-     * @param { string } subject
+     * @param { string | string[] } replace
+     * @param { string | string[] } subject
      * @param { boolean } caseSensitive
      *
-     * @return { string }
+     * @return { string | string[] }
      */
-    static replace(search: string | string[], replace: string, subject: string, caseSensitive: boolean = true): string {
+    static replace(search: string | string[], replace: string | string[], subject: string, caseSensitive?: boolean): string;
+    static replace(search: string | string[], replace: string | string[], subject: string[], caseSensitive?: boolean): string[];
+    static replace(search: string | string[], replace: string | string[], subject: string | string[], caseSensitive: boolean = true): string | string[] {
         search = Array.isArray(search) ? search : [search];
 
-        search.forEach((term: string | RegExp): void => {
-            if (!caseSensitive) {
-                term = new RegExp(term, 'gi');
-            }
+        search.forEach((term: string | RegExp, index: number): void => {
+            const $subject: string = Array.isArray(subject) ? subject[index] ?? '' : subject;
+            const $replace: string = Array.isArray(replace) ? replace[index] ?? '' : replace;
+            const pattern: string | RegExp = caseSensitive ? term : new RegExp(term, 'gi');
+            const replacement: string = $subject.replaceAll(pattern, $replace);
 
-            subject = subject.replaceAll(term, replace);
+            if (Array.isArray(subject)) {
+                subject[index] = replacement;
+            } else {
+                subject = replacement;
+            }
         });
 
         return subject;
@@ -1643,7 +1628,7 @@ export class Str {
 
         let position: number = subject.indexOf(search);
 
-        if (position !== undefined) {
+        if (position !== -1) {
             return subject.replace(search, replace);
         }
 
@@ -1687,7 +1672,7 @@ export class Str {
 
         let position: number = subject.lastIndexOf(search);
 
-        if (position !== 0) {
+        if (position !== -1) {
             return subject.substring(0, position) + replace + subject.substring(position + search.length);
         }
 
@@ -1718,35 +1703,63 @@ export class Str {
     /**
      * Replace the patterns matching the given regular expression.
      *
-     * @param { string } pattern
-     * @param { string | function } replace
+     * @param { RegExp | RegExp[] } pattern
+     * @param { string | string[] | ((match: string[]) => string) } replace
      * @param { string } subject
+     * @param { number } limit
      *
      * @return { string }
      */
-    static replaceMatches(pattern: string, replace: string | Function, subject: string): string {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
+    static replaceMatches(pattern: RegExp | RegExp[], replace: string | string[] | ((match: string[]) => string), subject: string, limit: number = -1): string {
+        const patterns: RegExp[] = Array.isArray(pattern) ? pattern : [pattern];
 
-        if (replace instanceof Function) {
-            subject = subject.replace(expression, (matched: string): string => matched);
-        }
+        patterns.forEach((pattern: RegExp, index: number) => {
+            const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
+            const expression: RegExp = new RegExp(pattern, flags);
+            let count: number = 0;
 
-        return subject.replace(expression, (replace as string));
+            if (replace instanceof Function) {
+                subject = subject.replace(expression, (substring: string, ...args: any[]): string => {
+                    if (limit < 0 || count < limit) {
+                        count++;
+
+                        return replace([substring, args[0]]);
+                    }
+
+                    return substring;
+                });
+            } else {
+                const replacement: string = Array.isArray(replace) ? replace[index] ?? '' : replace;
+
+                subject = subject.replace(expression, (match: string): string => {
+                    if (limit < 0 || count < limit) {
+                        count++;
+
+                        return replacement;
+                    }
+
+                    return match;
+                });
+            }
+        });
+
+        return subject;
     }
 
     /**
      * Remove any occurrence of the given string in the subject.
      *
-     * @param { string } search
-     * @param { string } subject
+     * @param { string | string[] } search
+     * @param { string | string[] } subject
      * @param { boolean } caseSensitive
      *
-     * @return { string }
+     * @return { string | string[] }
      */
-    static remove(search: string, subject: string, caseSensitive: boolean = true): string {
-        return subject.replace(new RegExp(search, caseSensitive ? 'g' : 'gi'), '');
+    static remove(search: string | string[], subject: string, caseSensitive?: boolean): string
+    static remove(search: string | string[], subject: string[], caseSensitive?: boolean): string[]
+    static remove(search: string | string[], subject: string | string[], caseSensitive: boolean = true): string | string[] {
+        // @ts-ignore
+        return this.replace(search, '', subject, caseSensitive ?? true);
     }
 
     /**
@@ -1794,7 +1807,7 @@ export class Str {
      */
     static title(value: string): string {
         return value.split(/[^A-Za-z]/)
-            .map((word: string): string => this.ucfirst(word[0] + word.substring(1).toLowerCase()))
+            .map((word: string): string => word === '' ? word : this.ucfirst(word[0] + word.substring(1).toLowerCase()))
             .join(' ');
     }
 
@@ -1814,7 +1827,7 @@ export class Str {
 
         let collapsed: string = this.replace(['-', '_', ' '], '_', parts.join('_'));
 
-        return collapsed.split('_').join(' ').trim();
+        return collapsed.split('_').filter(Boolean).join(' ').trim();
     }
 
     /**
@@ -1874,7 +1887,7 @@ export class Str {
      */
     static singular(value: string): string {
         // List of rules for singular words.
-        const singular: { [key: string]: string } = {
+        const singular: Record<string, string> = {
             // Special cases
             '^(.*)(menu)s$': '$1$2',
             '^tights$'     : 'tights',
@@ -1980,7 +1993,7 @@ export class Str {
         };
 
         // List of words that change irregularly.
-        const irregular: { [key: string]: string } = {
+        const irregular: Record<string, string> = {
             // A
             'abuses'    : 'abuse',
             'alumnae'   : 'alumna',
@@ -2383,7 +2396,7 @@ export class Str {
      *
      * @return { string }
      */
-    static slug(title: string, separator: string = '-', dictionary: { [key: string]: string } = { '@': 'at' }): string {
+    static slug(title: string, separator: string = '-', dictionary: Record<string, string> = { '@': 'at' }): string {
         let flip: string = separator === '-' ? '_' : '-';
 
         title = title.replace(`![${preg_quote(flip)}]+!u`, separator);
@@ -2586,12 +2599,12 @@ export class Str {
             }
         }
 
-        if (length !== null && length < 0) {
+        if (length !== null && length <= 0) {
             return '';
         }
 
-        if (length === 0 || length === null) {
-            return string.substring(start, length ?? string.length);
+        if (length === null || length === 0) {
+            return string.substring(start, string.length);
         }
 
         return string.substring(start, start + length);
@@ -3073,8 +3086,34 @@ export class Str {
     static createUlidsNormally(): void {
         this.ulidFactory = null;
     }
+
+    /**
+     * Convert the given value to a string or return the given fallback on failure.
+     *
+     * @param { * } value
+     * @param { string } fallback
+     *
+     * @return { string }
+     */
+    private static toStringOr(value: any, fallback: string): string {
+        if (value === null || value === undefined || typeof value === 'object' || typeof value === 'function') {
+            return fallback;
+        }
+
+        return String(value);
+    }
 }
 
+/**
+ * @typedef Value
+ * @type { Stringable | boolean | ((instance: Stringable) => Stringable|boolean) }
+ *
+ * @typedef Callback
+ * @type { (instance: Stringable, value: boolean) => Stringable | void | undefined }
+ *
+ * @typedef Fallback
+ * @type { Callback | null }
+ */
 export class Stringable {
     /**
      * The underlying string value.
@@ -3335,31 +3374,29 @@ export class Stringable {
      * @return { Stringable }
      */
     dirname(levels: number = 1): Stringable {
-        let dirname: string = this.#value;
-        let parts: string[] = [];
-        let isValidDirname: boolean = false;
-        let hasValidLevels: boolean = false;
+        const separator: string = this.#value.includes('/') ? '/' : '\\';
+        let parts: string[] = this.#value.split(separator);
 
-        if (this.#value.split('/')[0] !== this.#value) {
-            parts = this.#value.split('/');
-            dirname = parts.slice(0, parts.length - levels).join('/');
-            isValidDirname = true;
-            hasValidLevels = parts.length <= levels + 1;
+        if (parts.length <= levels) {
+            if (this.#value.startsWith(separator)) {
+                return new Stringable(separator);
+            }
+
+            if (this.#value.match(/^[a-zA-Z]:\\/)) {
+                return new Stringable(parts[0] + '\\');
+            }
+
+            return new Stringable('.');
         }
 
-        if (this.#value.split('\\')[0] !== this.#value) {
-            parts = this.#value.split('\\');
-            dirname = parts.slice(0, parts.length - levels).join('\\');
-            isValidDirname = true;
-            hasValidLevels = parts.length <= levels + 1;
+        let dirname: string = parts.slice(0, -levels).join(separator);
+
+        if (!dirname) {
+            dirname = separator;
         }
 
-        if (!isValidDirname) {
-            dirname = '.';
-        }
-
-        if (isValidDirname && hasValidLevels) {
-            dirname = '\\';
+        if (separator === '\\' && dirname.endsWith(':')) {
+            dirname += '\\';
         }
 
         return new Stringable(dirname);
@@ -3437,24 +3474,27 @@ export class Stringable {
     /**
      * Split a string using a regular expression or by length.
      *
-     * @param { string } pattern
+     * @param { RegExp | number } pattern
      * @param { number } limit
      *
      * @return { string[] }
      */
-    split(pattern: string, limit: number = -1): string[] {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
+    split(pattern: RegExp | number, limit: number = -1): string[] {
+        if (typeof pattern === 'number') {
+            return [...(this.#value.trim().match(new RegExp(`.{1,${pattern}}`, 'g')) ?? [])];
+        }
 
-        let segments: string[] = this.#value.split(expression);
+        const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
+        const expression: RegExp = new RegExp(pattern, flags);
 
-        if (limit !== -1) {
+        let segments: string[] = this.#value.trim().split(expression);
+
+        if (limit > 0) {
             const position: number = limit - 1 >= segments.length
                 ? segments.length - 1
                 : limit - 1;
 
-            segments = [...segments.slice(0, position), segments.splice(position).join('')];
+            segments = [...segments.slice(0, position), segments.splice(position).join(' ')];
         }
 
         return segments.map((segment: string): string => segment.trim()) ?? [];
@@ -3602,44 +3642,44 @@ export class Stringable {
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      *
      * @return { Stringable }
      */
-    match(pattern: string): Stringable {
+    match(pattern: RegExp): Stringable {
         return new Stringable(Str.match(pattern, this.#value));
     }
 
     /**
      * Determine if a given string matches a given pattern.
      *
-     * @param { string | string[] } pattern
+     * @param { RegExp | RegExp[] } pattern
      *
      * @return { boolean }
      */
-    isMatch(...pattern: string[]): boolean {
+    isMatch(...pattern: RegExp[]): boolean {
         return Str.isMatch(pattern, this.#value);
     }
 
     /**
      * Get the string matching the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      *
      * @return { string[] }
      */
-    matchAll(pattern: string): string[] {
+    matchAll(pattern: RegExp): string[] {
         return Str.matchAll(pattern, this.#value);
     }
 
     /**
      * Determine if the string matches the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      *
      * @return { boolean }
      */
-    test(pattern: string): boolean {
+    test(pattern: RegExp): boolean {
         return this.match(pattern).isNotEmpty();
     }
 
@@ -3764,12 +3804,12 @@ export class Stringable {
     /**
      * Remove any occurrence of the given string in the subject.
      *
-     * @param { string } search
+     * @param { string | string[] } search
      * @param { boolean } caseSensitive
      *
      * @return { Stringable }
      */
-    remove(search: string, caseSensitive: boolean = true): Stringable {
+    remove(search: string | string[], caseSensitive: boolean = true): Stringable {
         return new Stringable(Str.remove(search, this.#value, caseSensitive));
     }
 
@@ -3797,12 +3837,12 @@ export class Stringable {
      * Replace the given value in the given string.
      *
      * @param { string | string[] } search
-     * @param { string } replace
+     * @param { string | string[] } replace
      * @param { boolean } caseSensitive
      *
      * @return { Stringable }
      */
-    replace(search: string | string[], replace: string, caseSensitive: boolean = true): Stringable {
+    replace(search: string | string[], replace: string | string[], caseSensitive: boolean = true): Stringable {
         return new Stringable(Str.replace(search, replace, this.#value, caseSensitive));
     }
 
@@ -3869,21 +3909,14 @@ export class Stringable {
     /**
      * Replace the patterns matching the given regular expression.
      *
-     * @param { string } pattern
-     * @param { string | function } replace
+     * @param { RegExp | RegExp[] } pattern
+     * @param { string | string[] | ((match: string[]) => string) } replace
+     * @param { number } limit
      *
      * @return { Stringable }
      */
-    replaceMatches(pattern: string, replace: string | Function): Stringable {
-        const body: string = RegExpString.make(/^\/(.*)\/\w*$/, pattern);
-        const flags: string = RegExpString.make(/^\/.*\/(\w*)$/, pattern);
-        const expression: RegExp = new RegExp(body, flags + (flags.indexOf('g') !== -1 ? '' : 'g'));
-
-        if (replace instanceof Function) {
-            this.#value.replace(expression, (matched: string): string => matched);
-        }
-
-        return new Stringable(this.#value.replace(expression, (replace as string)));
+    replaceMatches(pattern: RegExp | RegExp[], replace: string | string[] | ((match: string[]) => string), limit: number = -1): Stringable {
+        return new Stringable(Str.replaceMatches(pattern, replace, this.#value, limit));
     }
 
     /**
@@ -3961,7 +3994,7 @@ export class Stringable {
      *
      * @return { Stringable }
      */
-    slug(separator: string = '-', dictionary: { [key: string]: string } = { '@': 'at' }): Stringable {
+    slug(separator: string = '-', dictionary: Record<string, string> = { '@': 'at' }): Stringable {
         return new Stringable(Str.slug(this.#value, separator, dictionary));
     }
 
@@ -4375,13 +4408,13 @@ export class Stringable {
     /**
      * Execute the given callback if the string matches the given pattern.
      *
-     * @param { string } pattern
+     * @param { RegExp } pattern
      * @param { Callback<this> } callback
      * @param { Fallback<this> } fallback
      *
      * @return { this }
      */
-    whenTest(pattern: string, callback: Callback<this>, fallback: Fallback<this> = null): this {
+    whenTest(pattern: RegExp, callback: Callback<this>, fallback: Fallback<this> = null): this {
         return this.when(this.test(pattern), callback, fallback);
     }
 
@@ -4632,15 +4665,7 @@ export class Stringable {
 
                 // English ordinal suffix for the day of the month, 2 characters (e.g., st, nd, rd or th)
                 case 'S': {
-                    let suffix: { [key: number]: string } = {
-                        1 : 'st',
-                        2 : 'nd',
-                        3 : 'rd',
-                        21: 'st',
-                        22: 'nd',
-                        23: 'rd',
-                        31: 'st'
-                    };
+                    let suffix: Record<number, string> = { 1: 'st', 2: 'nd', 3: 'rd', 21: 'st', 22: 'nd', 23: 'rd', 31: 'st' };
                     date += suffix[dayOfTheMonth] ?? 'th';
 
                     break;
@@ -4836,10 +4861,7 @@ export class Stringable {
                 }
                 // Difference to Greenwich time (GMT) without colon between hours and minutes (e.g., +0200)
                 case 'O': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined, })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4851,10 +4873,7 @@ export class Stringable {
 
                 // Difference to Greenwich time (GMT) with colon between hours and minutes (e.g., +02:00)
                 case 'P': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4866,10 +4885,7 @@ export class Stringable {
 
                 // The same as P, but returns Z instead of +00:00 (e.g., +02:00)
                 case 'p': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined, })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4881,10 +4897,7 @@ export class Stringable {
 
                 // Timezone abbreviation, if known; otherwise the GMT offset (e.g., EST, MDT, +05)
                 case 'T': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'short',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'short', timeZone: tz ?? undefined, })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4898,10 +4911,7 @@ export class Stringable {
                 // The offset for timezones west of UTC is always negative,
                 // and for those east of UTC is always positive. (e.g., -43200 through 50400)
                 case 'Z': {
-                    const timezone: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined
-                    });
+                    const timezone: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined });
                     const symbol: RegExpMatchArray | null = timezone.match(/[+-]/);
                     const data: string[] = timezone.split(/[+-]/);
 
@@ -5021,34 +5031,6 @@ export class HtmlString {
         }
 
         return html;
-    }
-}
-
-class RegExpString {
-    /**
-     * Build the Regular Expression string from the given parameter.
-     *
-     * @param { RegExp } pattern
-     * @param { string } string
-     *
-     * @return { string }
-     */
-    static make(pattern: RegExp, string: string): string {
-        if (string === '') {
-            throw new Error('Empty regular expression.');
-        }
-
-        if (!string.startsWith('/')) {
-            throw new Error('Delimiter must not be alphanumeric, backslash, or NUL.');
-        }
-
-        if (string.startsWith('/') && string.length === 1 || !string.endsWith('/')) {
-            throw new Error('No ending delimiter \'/\'.');
-        }
-
-        const expression: RegExpExecArray | null = new RegExp(pattern).exec(string);
-
-        return expression ? expression[1]! : '';
     }
 }
 
