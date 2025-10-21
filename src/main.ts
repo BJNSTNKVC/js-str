@@ -1769,14 +1769,17 @@ export class Str {
     /**
      * Remove any occurrence of the given string in the subject.
      *
-     * @param { string } search
-     * @param { string } subject
+     * @param { string | string[] } search
+     * @param { string | string[] } subject
      * @param { boolean } caseSensitive
      *
-     * @return { string }
+     * @return { string | string[] }
      */
-    static remove(search: string, subject: string, caseSensitive: boolean = true): string {
-        return subject.replace(new RegExp(search, caseSensitive ? 'g' : 'gi'), '');
+    static remove(search: string | string[], subject: string, caseSensitive?: boolean): string
+    static remove(search: string | string[], subject: string[], caseSensitive?: boolean): string[]
+    static remove(search: string | string[], subject: string | string[], caseSensitive: boolean = true): string | string[] {
+        // @ts-ignore
+        return this.replace(search, '', subject, caseSensitive ?? true);
     }
 
     /**
@@ -1844,7 +1847,7 @@ export class Str {
 
         let collapsed: string = this.replace(['-', '_', ' '], '_', parts.join('_'));
 
-        return collapsed.split('_').join(' ').trim();
+        return collapsed.split('_').filter(Boolean).join(' ').trim();
     }
 
     /**
@@ -3794,12 +3797,12 @@ export class Stringable {
     /**
      * Remove any occurrence of the given string in the subject.
      *
-     * @param { string } search
+     * @param { string | string[] } search
      * @param { boolean } caseSensitive
      *
      * @return { Stringable }
      */
-    remove(search: string, caseSensitive: boolean = true): Stringable {
+    remove(search: string | string[], caseSensitive: boolean = true): Stringable {
         return new Stringable(Str.remove(search, this.#value, caseSensitive));
     }
 

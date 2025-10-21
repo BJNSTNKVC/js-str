@@ -695,7 +695,7 @@ describe('Strings', (): void => {
             expect(Str.replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], '?1 ?2 ?3')).toEqual('foo bar baz');
             expect(Str.replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz'], ['?1', '?2', '?3'])).toEqual(['foo', 'bar', 'baz']);
         });
-    })
+    });
 
     describe('Str.replaceFirst', (): void => {
         test('replaces the first occurrence of a given value in a string', (): void => {
@@ -746,9 +746,25 @@ describe('Strings', (): void => {
     });
 
     describe('Str.remove', (): void => {
-        test('removes the given value or array of values from the string', (): void => {
+        test('removes the given value from the string', (): void => {
             expect(Str.remove('e', 'Peter Piper picked a peck of pickled peppers.')).toEqual('Ptr Pipr pickd a pck of pickld ppprs.');
+        });
+
+        test('removes the given value from the string case-insensitively', (): void => {
             expect(Str.remove('E', 'Peter Piper picked a peck of pickled peppers.', false)).toEqual('Ptr Pipr pickd a pck of pickld ppprs.');
+        });
+
+        test('removes the given array of values from the string', (): void => {
+            expect(Str.remove(['e', 'p'], 'Peter Piper picked a peck of pickled peppers.')).toEqual('Ptr Pir ickd a ck of ickld rs.');
+        });
+
+        test('removes the given array of values from the string case-insensitively', (): void => {
+            expect(Str.remove(['E', 'P'], 'Peter Piper picked a peck of pickled peppers.', false)).toEqual('tr ir ickd a ck of ickld rs.');
+        });
+
+        test('removes a given array of strings within the given string or strings', (): void => {
+            expect(Str.remove(['e', 'p'], 'Peter Piper picked a peck of pickled peppers.')).toEqual('Ptr Pir ickd a ck of ickld rs.');
+            expect(Str.remove(['e', 'p'], ['Peter', 'Piper'])).toEqual(['Ptr', 'Pier']);
         });
     });
 
@@ -2010,8 +2026,24 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('remove', (): void => {
-        test('removes the given value or values from the string', (): void => {
-            expect(Str.of('Arkansas is quite beautiful!').remove('quite ').toString()).toEqual('Arkansas is beautiful!');
+        test('removes the given value from the string', (): void => {
+            expect(Str.of('Peter Piper picked a peck of pickled peppers.').remove('e').toString()).toEqual('Ptr Pipr pickd a pck of pickld ppprs.');
+        });
+
+        test('removes the given value from the string case-insensitively', (): void => {
+            expect(Str.of('Peter Piper picked a peck of pickled peppers.').remove('E', false).toString()).toEqual('Ptr Pipr pickd a pck of pickld ppprs.');
+        });
+
+        test('removes the given array of values from the string', (): void => {
+            expect(Str.of('Peter Piper picked a peck of pickled peppers.').remove(['e', 'p']).toString()).toEqual('Ptr Pir ickd a ck of ickld rs.');
+        });
+
+        test('removes the given array of values from the string case-insensitively', (): void => {
+            expect(Str.of('Peter Piper picked a peck of pickled peppers.').remove(['E', 'P'], false).toString()).toEqual('tr ir ickd a ck of ickld rs.');
+        });
+
+        test('removes a given array of strings within the given string or strings', (): void => {
+            expect(Str.of('Peter Piper picked a peck of pickled peppers.').remove(['e', 'p']).toString()).toEqual('Ptr Pir ickd a ck of ickld rs.');
         });
     });
 
@@ -2040,7 +2072,7 @@ describe('Fluent Strings', (): void => {
         test('replaces a given array of strings within the given array of strings', (): void => {
             expect(Str.of('?1 ?2 ?3').replace(['?1', '?2', '?3'], ['foo', 'bar', 'baz']).toString()).toEqual('foo bar baz');
         });
-    })
+    });
 
     describe('replaceArray', (): void => {
         test('replaces a given value in the string sequentially using an array', (): void => {
