@@ -6,7 +6,7 @@ beforeEach((): void => {
     Str.createUlidsNormally();
 });
 
-describe('Strings', (): void => {
+describe('Str', (): void => {
     describe('Str.of', (): void => {
         test('returns instance of Stringable', (): void => {
             expect(Str.of('foo')).toBeInstanceOf(Stringable);
@@ -14,12 +14,24 @@ describe('Strings', (): void => {
     });
 
     describe('Str.after', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.after('This is my name', '')).toEqual('This is my name');
+        });
+
         test('returns everything after the given value in a string', (): void => {
             expect(Str.after('This is my name', 'This is')).toEqual(' my name');
         });
     });
 
     describe('Str.afterLast', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.afterLast('App\\Http\\Controllers\\Controller', '')).toEqual('App\\Http\\Controllers\\Controller');
+        });
+
+        test('returns the entire string if the "search" value is not found', (): void => {
+            expect(Str.afterLast('App\\Http\\Controllers\\Controller', '!')).toEqual('App\\Http\\Controllers\\Controller');
+        });
+
         test('returns everything after the last occurrence of the given value in a string', (): void => {
             expect(Str.afterLast('App\\Http\\Controllers\\Controller', '\\')).toEqual('Controller');
         });
@@ -58,31 +70,55 @@ describe('Strings', (): void => {
     });
 
     describe('Str.before', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.before('This is my name', '')).toEqual('This is my name');
+        });
+
+        test('returns the entire string if the "search" value is not found', (): void => {
+            expect(Str.before('This is my name', 'your')).toEqual('This is my name');
+        });
+
         test('returns everything before the given value in a string', (): void => {
             expect(Str.before('This is my name', 'my name')).toEqual('This is ');
         });
     });
 
     describe('Str.beforeLast', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.beforeLast('This is my name', '')).toEqual('This is my name');
+        });
+
+        test('returns the entire string if the "search" value is not found', (): void => {
+            expect(Str.beforeLast('This is my name', 'your')).toEqual('This is my name');
+        });
+
         test('returns everything before the last occurrence of the given value in a string', (): void => {
             expect(Str.beforeLast('This is my name', 'is')).toEqual('This ');
         });
     });
 
     describe('Str.between', (): void => {
+        test('returns the subject if the "from" and "to" values are an empty string', (): void => {
+            expect(Str.between('This is my name', '', '')).toEqual('This is my name');
+        });
+
         test('returns the portion of a string between two values', (): void => {
             expect(Str.between('This is my name', 'This', 'name')).toEqual(' is my ');
         });
     });
 
     describe('Str.betweenFirst', (): void => {
+        test('returns the subject if the "from" and "to" values are an empty string', (): void => {
+            expect(Str.betweenFirst('This is my name', '', '')).toEqual('This is my name');
+        });
+
         test('returns the smallest possible portion of a string between two values', (): void => {
             expect(Str.betweenFirst('[a] bc [d]', '[', ']')).toEqual('a');
         });
     });
 
     describe('Str.camel', (): void => {
-        test('converts the given string to camelCase', (): void => {
+        test('converts the given string to Camel case', (): void => {
             expect(Str.camel('foo_bar')).toEqual('fooBar');
         });
     });
@@ -141,6 +177,10 @@ describe('Strings', (): void => {
         test('determines if the given string contains the given value case-insensitively', (): void => {
             expect(Str.contains('This is my name', 'MY', true)).toBeTruthy();
         });
+
+        test('determines if the given string contains any of the values in the array case-insensitively', (): void => {
+            expect(Str.contains('This is my name', ['MY', 'foo'], true)).toBeTruthy();
+        });
     });
 
     describe('Str.containsAll', (): void => {
@@ -164,6 +204,10 @@ describe('Strings', (): void => {
 
         test('determines if the given string doesnt contain the given value case-insensitively', (): void => {
             expect(Str.doesntContain('This is name', 'MY', true)).toBeTruthy();
+        });
+
+        test('determines if the given string doesnt contain any of the values in the array case-insensitively', (): void => {
+            expect(Str.doesntContain('This is name', ['MY', 'FOO'], true)).toBeTruthy();
         });
     });
 
@@ -246,6 +290,26 @@ describe('Strings', (): void => {
         test('allows definition of custom omission strings', (): void => {
             expect(Str.excerpt('This is my name', 'name', { 'radius': 3, 'omission': '(...) ' })).toEqual('(...) my name');
         });
+
+        test('returns null when phrase is not found', (): void => {
+            expect(Str.excerpt('This is my name', 'notfound')).toBeNull();
+        });
+
+        test('handles empty string as phrase', (): void => {
+            expect(Str.excerpt('This is my name', '')).toEqual('This is my name');
+        });
+
+        test('handles phrase at the start of string', (): void => {
+            expect(Str.excerpt('Hello world, this is a test', 'Hello', { radius: 5 })).toEqual('Hello worl...');
+        });
+
+        test('handles phrase at the end of string', (): void => {
+            expect(Str.excerpt('This is the end of the test', 'test', { radius: 5 })).toEqual('...the test');
+        });
+
+        test('handles radius larger than text length', (): void => {
+            expect(Str.excerpt('Short text', 'text', { radius: 100 })).toEqual('Short text');
+        });
     });
 
     describe('Str.finish', (): void => {
@@ -320,9 +384,46 @@ describe('Strings', (): void => {
     });
 
     describe('Str.isUlid', (): void => {
-        test('determines if the given string is a valid ULID', (): void => {
+        test('validates correct ULID format', (): void => {
             expect(Str.isUlid('01gd6r360bp37zj17nxb55yv40')).toBeTruthy();
-            expect(Str.isUlid('laravel')).toBeFalsy();
+            expect(Str.isUlid('7ZZZZZZZZZZZZZZZZZZZZZZZZZ')).toBeTruthy();
+        });
+
+        test('rejects invalid ULIDs', (): void => {
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4!')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4i')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4l')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4o')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4I')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4O')).toBeFalsy();
+        });
+
+        test('validates ULID length', (): void => {
+            expect(Str.isUlid('')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv4')).toBeFalsy();
+            expect(Str.isUlid('01gd6r360bp37zj17nxb55yv400')).toBeFalsy();
+        });
+
+        test('validates timestamp overflow', (): void => {
+            expect(Str.isUlid('81gd6r360bp37zj17nxb55yv40')).toBeFalsy();
+            expect(Str.isUlid('90000000000000000000000000')).toBeFalsy();
+        });
+
+        test('handles edge cases', (): void => {
+            expect(Str.isUlid('01GD6R360BP37ZJ17NXB55YV40')).toBeTruthy();
+            expect(Str.isUlid('00000000000000000000000000')).toBeTruthy();
+            expect(Str.isUlid('7ZZZZZZZZZZZZZZZZZZZZZZZZZ')).toBeTruthy();
+        });
+
+        test('rejects non-string inputs', (): void => {
+            // @ts-expect-error
+            expect(Str.isUlid(123)).toBeFalsy();
+            // @ts-expect-error
+            expect(Str.isUlid(null)).toBeFalsy();
+            // @ts-expect-error
+            expect(Str.isUlid(undefined)).toBeFalsy();
+            // @ts-expect-error
+            expect(Str.isUlid({})).toBeFalsy();
         });
     });
 
@@ -339,6 +440,10 @@ describe('Strings', (): void => {
     });
 
     describe('Str.limit', (): void => {
+        test('returns the original string when length is within limit', (): void => {
+            expect(Str.limit('The quick brown fox jumps over the lazy dog', 100)).toBe('The quick brown fox jumps over the lazy dog');
+        });
+
         test('truncates the given string to the specified length', (): void => {
             expect(Str.limit('The quick brown fox jumps over the lazy dog', 20)).toEqual('The quick brown fox...');
         });
@@ -347,7 +452,11 @@ describe('Strings', (): void => {
             expect(Str.limit('The quick brown fox jumps over the lazy dog', 20, ' (...)')).toEqual('The quick brown fox (...)');
         });
 
-        test('respects word boundaries if \'preserveWord\' is set to true', (): void => {
+        test('handles space after limit when "preserveWord" is set to true', (): void => {
+            expect(Str.limit('The quick brown fox jumps over the lazy dog', 3, '...', true)).toEqual('The...');
+        });
+
+        test('respects word boundaries if "preserveWord" is set to true', (): void => {
             expect(Str.limit('The quick brown fox jumps over the lazy dog', 20, '...', true)).toEqual('The quick brown...');
         });
     });
@@ -359,7 +468,23 @@ describe('Strings', (): void => {
     });
 
     describe('Str.words', (): void => {
-        test('limits the number of words in a string', (): void => {
+        test('returns the original string when words limit is not reached', (): void => {
+            expect(Str.words('Perfectly balanced, as all things should be.', 10)).toEqual('Perfectly balanced, as all things should be.');
+        });
+
+        test('returns the original string when it contains only one word', (): void => {
+            expect(Str.words('Word', 3)).toEqual('Word');
+        });
+
+        test('returns the original string when words limit equals the number of words', (): void => {
+            expect(Str.words('Perfectly balanced, as all things should be.', 7)).toEqual('Perfectly balanced, as all things should be.');
+        });
+
+        test('limits the number of words in the string', (): void => {
+            expect(Str.words('Perfectly balanced, as all things should be.', 3)).toEqual('Perfectly balanced, as...');
+        });
+
+        test('prepends the end of the string', (): void => {
             expect(Str.words('Perfectly balanced, as all things should be.', 3, ' >>>')).toEqual('Perfectly balanced, as >>>');
         });
     });
@@ -368,6 +493,15 @@ describe('Strings', (): void => {
         test('masks a portion of a string with a repeated character', (): void => {
             expect(Str.mask('taylor@example.com', '*', 3)).toEqual('tay***************');
             expect(Str.mask('taylor@example.com', '*', -15, 3)).toEqual('tay***@example.com');
+        });
+
+        test('returns original string when character is empty', (): void => {
+            expect(Str.mask('taylor@example.com', '', 2, 4)).toEqual('taylor@example.com');
+        });
+
+        test('returns original string when segment is empty', (): void => {
+            expect(Str.mask('taylor@example.com', '*', 20)).toEqual('taylor@example.com');
+            expect(Str.mask('taylor@example.com', '*', 2, 0)).toEqual('taylor@example.com');
         });
     });
 
@@ -384,12 +518,11 @@ describe('Strings', (): void => {
     describe('Str.isMatch', (): void => {
         test('determines if the string matches a given regular expression', (): void => {
             expect(Str.isMatch(/foo (.*)/, 'foo bar')).toBeTruthy();
-            expect(Str.isMatch(/foo (.*)/, 'laravel')).toBeFalsy();
+            expect(Str.isMatch([/foo baz/, /foo (.*)/], 'foo bar')).toBeTruthy();
         });
 
-        test('determines if the string matches a given array of regular expression', (): void => {
-            expect(Str.isMatch([/.*,.*!/, /H.o/], 'Hello, Laravel!')).toBeTruthy();
-            expect(Str.isMatch([/.*,.*!/, /H.o/], 'Hello, Laravel')).toBeFalsy();
+        test('determines if the string does not match a given regular expression', (): void => {
+            expect(Str.isMatch(/foo (.*)/, 'laravel')).toBeFalsy();
         });
     });
 
@@ -443,7 +576,7 @@ describe('Strings', (): void => {
             expect(Str.plural('apple')).toBe('apples');
         });
 
-        test('handles count parameter correctly', (): void => {
+        test('handles "count" value correctly', (): void => {
             expect(Str.plural('child', 1)).toBe('child');
             expect(Str.plural('child', 2)).toBe('children');
             expect(Str.plural('person', 1)).toBe('person');
@@ -538,6 +671,24 @@ describe('Strings', (): void => {
             expect(Str.plural(' ')).toBe(' ');
             expect(Str.plural('sheep', 0)).toBe('sheep');
             expect(Str.plural('person', 1.5)).toBe('people');
+        });
+
+        test('preserves case sensitivity in pluralization', (): void => {
+            expect(Str.plural('HERO')).toBe('HEROES');
+            expect(Str.plural('PERSON')).toBe('PEOPLE');
+            expect(Str.plural('CHILD')).toBe('CHILDREN');
+            expect(Str.plural('SHEEP')).toBe('SHEEP');
+
+            expect(Str.plural('Hero')).toBe('Heroes');
+            expect(Str.plural('Person')).toBe('People');
+            expect(Str.plural('Child')).toBe('Children');
+            expect(Str.plural('Sheep')).toBe('Sheep');
+
+            expect(Str.plural('HeRo')).toBe('HeRoes');
+            expect(Str.plural('PeRsOn')).toBe('People');
+            expect(Str.plural('ChIlD')).toBe('Children');
+            expect(Str.plural('ShEep')).toBe('ShEep');
+            expect(Str.plural('uSeR')).toBe('uSeRs');
         });
     });
 
@@ -701,25 +852,97 @@ describe('Strings', (): void => {
         test('replaces the first occurrence of a given value in a string', (): void => {
             expect(Str.replaceFirst('the', 'a', 'the quick brown fox jumps over the lazy dog')).toEqual('a quick brown fox jumps over the lazy dog');
         });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.replaceFirst('baz', 'bar', 'the quick brown fox jumps over the lazy dog')).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.replaceFirst('', 'bar', 'the quick brown fox jumps over the lazy dog')).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.replaceFirst('non existent', 'replacement', 'the quick brown fox jumps over the lazy dog')).toEqual('the quick brown fox jumps over the lazy dog');
+        });
     });
 
     describe('Str.replaceStart', (): void => {
-        test('replaces the first occurrence of the given value only if the value appears at the start of the string', (): void => {
+        test('replaces the first occurrence of the given value only if it appears at the start of the string', (): void => {
             expect(Str.replaceStart('Hello', 'Laravel', 'Hello World')).toEqual('Laravel World');
             expect(Str.replaceStart('World', 'Laravel', 'Hello World')).toEqual('Hello World');
+        });
+
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.replaceStart('', 'Laravel', 'Hello World')).toEqual('Hello World');
+        });
+
+        test('replaces only at the start of the string', (): void => {
+            expect(Str.replaceStart('Hello', 'Hi', 'Hello World, Hello Universe')).toEqual('Hi World, Hello Universe');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.replaceStart('Greetings', 'Hi', 'Hello World')).toEqual('Hello World');
+        });
+
+        test('handles empty subject string', (): void => {
+            expect(Str.replaceStart('Hello', 'Hi', '')).toEqual('');
+        });
+
+        test('replaces when search and subject are the same', (): void => {
+            expect(Str.replaceStart('Hello', 'Hi', 'Hello')).toEqual('Hi');
         });
     });
 
     describe('Str.replaceLast', (): void => {
-        test('replaces the last occurrence of a given value in a string', (): void => {
+        test('replaces the last occurrence of the given value', (): void => {
             expect(Str.replaceLast('the', 'a', 'the quick brown fox jumps over the lazy dog')).toEqual('the quick brown fox jumps over a lazy dog');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.replaceLast('baz', 'bar', 'the quick brown fox jumps over the lazy dog')).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.replaceLast('', 'bar', 'the quick brown fox jumps over the lazy dog')).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('replaces the only occurrence when it appears once', (): void => {
+            expect(Str.replaceLast('quick', 'slow', 'the quick brown fox')).toEqual('the slow brown fox');
+        });
+
+        test('replaces the last occurrence when multiple exist', (): void => {
+            expect(Str.replaceLast('the', 'a', 'the quick the brown fox')).toEqual('the quick a brown fox');
         });
     });
 
     describe('Str.replaceEnd', (): void => {
-        test('replaces the last occurrence of the given value only if the value appears at the end of the string', (): void => {
+        test('replaces the last occurrence of the given value only if it appears at the end of the string', (): void => {
             expect(Str.replaceEnd('World', 'Laravel', 'Hello World')).toEqual('Hello Laravel');
-            expect(Str.replaceEnd('Hello', 'Laravel', 'Hello World')).toEqual('Hello World');
+            expect(Str.replaceEnd('Hello', 'Hi', 'Hello World')).toEqual('Hello World');
+        });
+
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.replaceEnd('', 'Laravel', 'Hello World')).toEqual('Hello World');
+        });
+
+        test('replaces only at the end of the string', (): void => {
+            expect(Str.replaceEnd('Universe', 'World', 'Hello Universe, Hello Universe')).toEqual('Hello Universe, Hello World');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.replaceEnd('Greetings', 'World', 'Hello Universe')).toEqual('Hello Universe');
+        });
+
+        test('handles empty subject string', (): void => {
+            expect(Str.replaceEnd('Hello', 'Hi', '')).toEqual('');
+        });
+
+        test('replaces when search and subject are the same', (): void => {
+            expect(Str.replaceEnd('Hello', 'Hi', 'Hello')).toEqual('Hi');
+        });
+
+        test('replaces only the ending match', (): void => {
+            expect(Str.replaceEnd('end', 'finish', 'This is the end of the end')).toEqual('This is the end of the finish');
         });
     });
 
@@ -797,12 +1020,24 @@ describe('Strings', (): void => {
         test('converts strings delimited by casing, hyphens, or underscores into a space delimited string with each word’s first letter capitalized', (): void => {
             expect(Str.headline('steve_jobs')).toEqual('Steve Jobs');
             expect(Str.headline('EmailNotificationSent')).toEqual('Email Notification Sent');
+            expect(Str.headline('too   many  spaces')).toEqual('Too Many Spaces');
         });
     });
 
     describe('Str.apa', (): void => {
         test('converts the given string to title case following the APA guidelines', (): void => {
-            expect(Str.apa('Creating A Project')).toEqual('Creating a Project');
+            expect(Str.apa('the great gatsby')).toBe('The Great Gatsby');
+            expect(Str.apa('the cat in the hat')).toBe('The Cat in the Hat');
+            expect(Str.apa('to be or not to be')).toBe('To Be or Not to Be');
+            expect(Str.apa('the mother-in-law')).toBe('The Mother-in-Law');
+            expect(Str.apa('')).toBe('');
+            expect(Str.apa('a')).toBe('A');
+            expect(Str.apa('the')).toBe('The');
+            expect(Str.apa('the end. the beginning')).toBe('The End. The Beginning');
+            expect(Str.apa('tHe QuiCk bRoWn fOx')).toBe('The Quick Brown Fox');
+            expect(Str.apa('the art of war')).toBe('The Art of War');
+            expect(Str.apa('a tale of two cities')).toBe('A Tale of Two Cities');
+            expect(Str.apa('the lord of the rings: the fellowship of the ring')).toBe('The Lord of the Rings: The Fellowship of the Ring');
         });
     });
 
@@ -1015,7 +1250,7 @@ describe('Strings', (): void => {
     });
 
     describe('Str.substr', (): void => {
-        test('returns the portion of string specified by the start and length parameters', (): void => {
+        test('returns the portion of string specified by the start and length values', (): void => {
             expect(Str.substr('The Laravel Framework', 4, 7)).toEqual('Laravel');
         });
     });
@@ -1023,6 +1258,12 @@ describe('Strings', (): void => {
     describe('Str.substrCount', (): void => {
         test('returns the number of occurrences of a given value in the given string', (): void => {
             expect(Str.substrCount('If you like ice cream, you will like snow cones.', 'like')).toEqual(2);
+        });
+
+        test('respects the "offset" and "length" values when counting occurrences', (): void => {
+            expect(Str.substrCount('hello hello hello', 'hello', 6)).toEqual(2);
+            expect(Str.substrCount('hello hello hello', 'hello', 0, 5)).toEqual(1);
+            expect(Str.substrCount('hello hello hello', 'hello', 6, 6)).toEqual(1);
         });
     });
 
@@ -1173,11 +1414,28 @@ describe('Strings', (): void => {
 
             expect(uuids.size).toBe(count);
         });
+
+        test('uses the custom UUID factory when set', (): void => {
+            const uuid: string = '123e4567-e89b-12d3-a456-426614174000';
+
+            Str.createUuidsUsing((): string => uuid);
+
+            expect(Str.uuid7()).toBe(uuid);
+            expect(Str.uuid7(new Date())).toBe(uuid);
+        });
     });
 
     describe('Str.orderedUuid', (): void => {
         test('generates a "timestamp first" UUID', (): void => {
             expect(Str.orderedUuid()).toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
+        });
+
+        test('uses the custom UUID factory when set', (): void => {
+            const uuid: string = '123e4567-e89b-12d3-a456-426614174000';
+
+            Str.createUuidsUsing((): string => uuid);
+
+            expect(Str.orderedUuid()).toBe(uuid);
         });
     });
 
@@ -1368,16 +1626,52 @@ describe('Strings', (): void => {
             expect(first).toMatch(/^[0-9A-Z]{26}$/);
         });
     });
+
+    describe('Str.toStringOr', (): void => {
+        test('converts values to strings', (): void => {
+            // @ts-ignore
+            expect(Str.toStringOr(123, 'fallback')).toBe('123');
+            // @ts-ignore
+            expect(Str.toStringOr(true, 'fallback')).toBe('true');
+            // @ts-ignore
+            expect(Str.toStringOr('test', 'fallback')).toBe('test');
+        });
+
+        test('returns fallback for null, undefined, objects and functions', (): void => {
+            // @ts-ignore
+            expect(Str.toStringOr(null, 'fallback')).toBe('fallback');
+            // @ts-ignore
+            expect(Str.toStringOr(undefined, 'fallback')).toBe('fallback');
+            // @ts-ignore
+            expect(Str.toStringOr((): string => 'test', 'fallback')).toBe('fallback');
+            // @ts-ignore
+            expect(Str.toStringOr({}, 'fallback')).toBe('fallback');
+            // @ts-ignore
+            expect(Str.toStringOr([1, 2, 3], 'fallback')).toBe('fallback');
+        });
+    });
 });
 
-describe('Fluent Strings', (): void => {
+describe('Stringable', (): void => {
     describe('after', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.of('This is my name').after('').toString()).toEqual('This is my name');
+        });
+
         test('returns everything after the given value in a string', (): void => {
             expect(Str.of('This is my name').after('This is').toString()).toEqual(' my name');
         });
     });
 
     describe('afterLast', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.of('App\\Http\\Controllers\\Controller').afterLast('').toString()).toEqual('App\\Http\\Controllers\\Controller');
+        });
+
+        test('returns the entire string if the "search" value is not found', (): void => {
+            expect(Str.of('App\\Http\\Controllers\\Controller').afterLast('!').toString()).toEqual('App\\Http\\Controllers\\Controller');
+        });
+
         test('returns everything after the last occurrence of the given value in a string', (): void => {
             expect(Str.of('App\\Http\\Controllers\\Controller').afterLast('\\').toString()).toEqual('Controller');
         });
@@ -1483,24 +1777,48 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('before', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.of('This is my name').before('').toString()).toEqual('This is my name');
+        });
+
+        test('returns the entire string if the "search" value is not found', (): void => {
+            expect(Str.of('This is my name').before('your').toString()).toEqual('This is my name');
+        });
+
         test('returns everything before the given value in a string', (): void => {
             expect(Str.of('This is my name').before('my name').toString()).toEqual('This is ');
         });
     });
 
     describe('beforeLast', (): void => {
+        test('returns the subject if the "search" value is an empty string', (): void => {
+            expect(Str.of('This is my name').beforeLast('').toString()).toEqual('This is my name');
+        });
+
+        test('returns the entire string if the "search" value is not found', (): void => {
+            expect(Str.of('This is my name').beforeLast('your').toString()).toEqual('This is my name');
+        });
+
         test('returns everything before the last occurrence of the given value in a string', (): void => {
             expect(Str.of('This is my name').beforeLast('is').toString()).toEqual('This ');
         });
     });
 
     describe('between', (): void => {
+        test('returns the subject if the "from" and "to" values are an empty string', (): void => {
+            expect(Str.of('This is my name').between('', '').toString()).toEqual('This is my name');
+        });
+
         test('returns the portion of a string between two values', (): void => {
             expect(Str.of('This is my name').between('This', 'name').toString()).toEqual(' is my ');
         });
     });
 
     describe('betweenFirst', (): void => {
+        test('returns the subject if the "from" and "to" values are an empty string', (): void => {
+            expect(Str.of('This is my name').betweenFirst('', '').toString()).toEqual('This is my name');
+        });
+
         test('returns the smallest possible portion of a string between two values', (): void => {
             expect(Str.of('[a] bc [d]').betweenFirst('[', ']').toString()).toEqual('a');
         });
@@ -1675,22 +1993,77 @@ describe('Fluent Strings', (): void => {
     describe('exactly', (): void => {
         test('determines if the given string is an exact match with another string', (): void => {
             expect(Str.of('Laravel').exactly('Laravel')).toBeTruthy();
+            expect(Str.of('Laravel').exactly('Laravel ')).toBeFalsy();
+
+        });
+
+        test('determines if the given string is an exact match with another string as Stringable', (): void => {
+            expect(Str.of('Laravel').exactly(Str.of('Laravel'))).toBeTruthy();
+            expect(Str.of('Laravel').exactly(Str.of('Laravel '))).toBeFalsy();
         });
     });
 
     describe('excerpt', (): void => {
-        test('extracts an excerpt from the string that matches the first instance of a phrase within that string', (): void => {
+        test('extracts an excerpt from a given string that matches the first instance of a phrase', (): void => {
             expect(Str.of('This is my name').excerpt('my', { 'radius': 3 })).toEqual('...is my na...');
         });
 
         test('allows definition of custom omission strings', (): void => {
             expect(Str.of('This is my name').excerpt('name', { 'radius': 3, 'omission': '(...) ' })).toEqual('(...) my name');
         });
+
+        test('returns null when phrase is not found', (): void => {
+            expect(Str.of('This is my name').excerpt('notfound')).toBeNull();
+        });
+
+        test('handles empty string as phrase', (): void => {
+            expect(Str.of('This is my name').excerpt('')).toEqual('This is my name');
+        });
+
+        test('handles phrase at the start of string', (): void => {
+            expect(Str.of('Hello world, this is a test').excerpt('Hello', { radius: 5 })).toEqual('Hello worl...');
+        });
+
+        test('handles phrase at the end of string', (): void => {
+            expect(Str.of('This is the end of the test').excerpt('test', { radius: 5 })).toEqual('...the test');
+        });
+
+        test('handles radius larger than text length', (): void => {
+            expect(Str.of('Short text').excerpt('text', { radius: 100 })).toEqual('Short text');
+        });
+
+        test('handles zero radius', (): void => {
+            expect(Str.of('This is a test').excerpt('is', { radius: 0 })).toEqual('...is...');
+        });
+
+        test('handles custom omission with empty string', (): void => {
+            expect(Str.of('This is a test').excerpt('is', { radius: 1, omission: '' })).toEqual('his');
+        });
+
+        test('handles multiple occurrences of phrase', (): void => {
+            expect(Str.of('This is a test and this is another test').excerpt('test', { radius: 5 })).toEqual('...is a test and...');
+        });
+
+        test('handles whitespace in phrase', (): void => {
+            expect(Str.of('This is a test with spaces').excerpt('a test', { radius: 3 })).toEqual('...is a test wi...');
+        });
     });
 
     describe('explode', (): void => {
         test('splits the string by the given delimiter and returns an array containing each section of the split string', (): void => {
             expect(Str.of('foo bar baz').explode(' ')).toEqual(['foo', 'bar', 'baz']);
+        });
+
+        test('limits the number of splits when "limit" value is provided', (): void => {
+            expect(Str.of('foo bar baz').explode(' ', 2)).toEqual(['foo', 'bar baz']);
+        });
+
+        test('handles limit greater than array length', (): void => {
+            expect(Str.of('foo bar baz').explode(' ', 10)).toEqual(['foo', 'bar', 'baz']);
+        });
+
+        test('handles limit equal to array length', (): void => {
+            expect(Str.of('foo bar baz').explode(' ', 3)).toEqual(['foo', 'bar', 'baz']);
         });
     });
 
@@ -1718,7 +2091,7 @@ describe('Fluent Strings', (): void => {
         test('trims whitespace from results', (): void => {
             expect(Str.of(' one ,  two  , three ').split(/\s*,\s*/)).toEqual(['one', 'two', 'three']);
         });
-    })
+    });
 
     describe('finish', (): void => {
         test('adds a single instance of the given value to a string if it does not already end with that value', (): void => {
@@ -1778,9 +2151,46 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('isUlid', (): void => {
-        test('determines if a given string is a ULID', (): void => {
+        test('validates correct ULID format', (): void => {
             expect(Str.of('01gd6r360bp37zj17nxb55yv40').isUlid()).toBeTruthy();
-            expect(Str.of('Taylor').isUlid()).toBeFalsy();
+            expect(Str.of('7ZZZZZZZZZZZZZZZZZZZZZZZZZ').isUlid()).toBeTruthy();
+        });
+
+        test('rejects invalid ULIDs', (): void => {
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4!').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4i').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4l').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4o').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4I').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4O').isUlid()).toBeFalsy();
+        });
+
+        test('validates ULID length', (): void => {
+            expect(Str.of('').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv4').isUlid()).toBeFalsy();
+            expect(Str.of('01gd6r360bp37zj17nxb55yv400').isUlid()).toBeFalsy();
+        });
+
+        test('validates timestamp overflow', (): void => {
+            expect(Str.of('81gd6r360bp37zj17nxb55yv40').isUlid()).toBeFalsy();
+            expect(Str.of('90000000000000000000000000').isUlid()).toBeFalsy();
+        });
+
+        test('handles edge cases', (): void => {
+            expect(Str.of('01GD6R360BP37ZJ17NXB55YV40').isUlid()).toBeTruthy();
+            expect(Str.of('00000000000000000000000000').isUlid()).toBeTruthy();
+            expect(Str.of('7ZZZZZZZZZZZZZZZZZZZZZZZZZ').isUlid()).toBeTruthy();
+        });
+
+        test('rejects non-string inputs', (): void => {
+            // @ts-expect-error
+            expect(Str.of(123).isUlid()).toBeFalsy();
+            // @ts-expect-error
+            expect(Str.of(null).isUlid()).toBeFalsy();
+            // @ts-expect-error
+            expect(Str.of(undefined).isUlid()).toBeFalsy();
+            // @ts-expect-error
+            expect(Str.of({}).isUlid()).toBeFalsy();
         });
     });
 
@@ -1811,6 +2221,10 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('limit', (): void => {
+        test('returns the original string when length is within limit', (): void => {
+            expect(Str.of('The quick brown fox jumps over the lazy dog').limit(100).toString()).toBe('The quick brown fox jumps over the lazy dog');
+        });
+
         test('truncates the given string to the specified length', (): void => {
             expect(Str.of('The quick brown fox jumps over the lazy dog').limit(20).toString()).toEqual('The quick brown fox...');
         });
@@ -1819,9 +2233,14 @@ describe('Fluent Strings', (): void => {
             expect(Str.of('The quick brown fox jumps over the lazy dog').limit(20, ' (...)').toString()).toEqual('The quick brown fox (...)');
         });
 
-        test('respects word boundaries if \'preserveWord\' is set to true', (): void => {
+        test('handles space after limit when "preserveWord" is set to true', (): void => {
+            expect(Str.of('The quick brown fox jumps over the lazy dog').limit(3, '...', true).toString()).toEqual('The...');
+        });
+
+        test('respects word boundaries if "preserveWord" is set to true', (): void => {
             expect(Str.of('The quick brown fox jumps over the lazy dog').limit(20, '...', true).toString()).toEqual('The quick brown...');
         });
+
     });
 
     describe('lower', (): void => {
@@ -1833,10 +2252,16 @@ describe('Fluent Strings', (): void => {
     describe('mask', (): void => {
         test('masks a portion of a string with a repeated character', (): void => {
             expect(Str.of('taylor@example.com').mask('*', 3).toString()).toEqual('tay***************');
+            expect(Str.of('taylor@example.com').mask('*', -15, 3).toString()).toEqual('tay***@example.com');
         });
 
-        test('masks a portion of a string from the end', (): void => {
-            expect(Str.of('taylor@example.com').mask('*', -15, 3).toString()).toEqual('tay***@example.com');
+        test('returns original string when character is empty', (): void => {
+            expect(Str.of('taylor@example.com').mask('', 2, 4).toString()).toEqual('taylor@example.com');
+        });
+
+        test('returns original string when segment is empty', (): void => {
+            expect(Str.of('taylor@example.com').mask('*', 20).toString()).toEqual('taylor@example.com');
+            expect(Str.of('taylor@example.com').mask('*', 2, 0).toString()).toEqual('taylor@example.com');
         });
     });
 
@@ -1853,12 +2278,10 @@ describe('Fluent Strings', (): void => {
     describe('isMatch', (): void => {
         test('determines if the string matches a given regular expression', (): void => {
             expect(Str.of('foo bar').isMatch(/foo (.*)/)).toBeTruthy();
-            expect(Str.of('laravel').isMatch(/foo (.*)/)).toBeFalsy();
         });
 
-        test('determines if the string matches a given array of regular expression', (): void => {
-            expect(Str.of('Hello, Laravel!').isMatch([/.*,.*!/, /H.o/])).toBeTruthy();
-            expect(Str.of('Hello, Laravel').isMatch([/.*,.*!/, /H.o/])).toBeFalsy();
+        test('determines if the string does not match a given regular expression', (): void => {
+            expect(Str.of('laravel').isMatch(/foo (.*)/)).toBeFalsy();
         });
     });
 
@@ -1948,7 +2371,7 @@ describe('Fluent Strings', (): void => {
             expect(Str.of('apple').plural().toString()).toBe('apples');
         });
 
-        test('handles count parameter correctly', (): void => {
+        test('handles "count" value correctly', (): void => {
             expect(Str.of('child').plural(1).toString()).toBe('child');
             expect(Str.of('child').plural(2).toString()).toBe('children');
             expect(Str.of('person').plural(1).toString()).toBe('person');
@@ -2043,6 +2466,24 @@ describe('Fluent Strings', (): void => {
             expect(Str.of(' ').plural().toString()).toBe(' ');
             expect(Str.of('sheep').plural(0).toString()).toBe('sheep');
             expect(Str.of('person').plural(1.5).toString()).toBe('people');
+        });
+
+        test('preserves case sensitivity in pluralization', (): void => {
+            expect(Str.of('HERO').plural().toString()).toBe('HEROES');
+            expect(Str.of('PERSON').plural().toString()).toBe('PEOPLE');
+            expect(Str.of('CHILD').plural().toString()).toBe('CHILDREN');
+            expect(Str.of('SHEEP').plural().toString()).toBe('SHEEP');
+
+            expect(Str.of('Hero').plural().toString()).toBe('Heroes');
+            expect(Str.of('Person').plural().toString()).toBe('People');
+            expect(Str.of('Child').plural().toString()).toBe('Children');
+            expect(Str.of('Sheep').plural().toString()).toBe('Sheep');
+
+            expect(Str.of('HeRo').plural().toString()).toBe('HeRoes');
+            expect(Str.of('PeRsOn').plural().toString()).toBe('People');
+            expect(Str.of('ChIlD').plural().toString()).toBe('Children');
+            expect(Str.of('ShEep').plural().toString()).toBe('ShEep');
+            expect(Str.of('uSeR').plural().toString()).toBe('uSeRs');
         });
     });
 
@@ -2139,31 +2580,97 @@ describe('Fluent Strings', (): void => {
         test('replaces the first occurrence of a given value in a string', (): void => {
             expect(Str.of('the quick brown fox jumps over the lazy dog').replaceFirst('the', 'a').toString()).toEqual('a quick brown fox jumps over the lazy dog');
         });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.of('the quick brown fox jumps over the lazy dog').replaceFirst('baz', 'bar').toString()).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.of('the quick brown fox jumps over the lazy dog').replaceFirst('', 'bar').toString()).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.of('the quick brown fox jumps over the lazy dog').replaceFirst('non existent', 'replacement').toString()).toEqual('the quick brown fox jumps over the lazy dog');
+        });
     });
 
     describe('replaceStart', (): void => {
         test('replaces the first occurrence of the given value only if it appears at the start of the string', (): void => {
             expect(Str.of('Hello World').replaceStart('Hello', 'Laravel').toString()).toEqual('Laravel World');
+            expect(Str.of('Hello World').replaceStart('World', 'Laravel').toString()).toEqual('Hello World');
         });
 
-        test('does not replace the first occurrence of the given value if it does not appear at the start of the string', (): void => {
-            expect(Str.of('Hello World').replaceStart('World', 'Laravel').toString()).toEqual('Hello World');
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.of('Hello World').replaceStart('', 'Laravel').toString()).toEqual('Hello World');
+        });
+
+        test('replaces only at the start of the string', (): void => {
+            expect(Str.of('Hello World, Hello Universe').replaceStart('Hello', 'Hi').toString()).toEqual('Hi World, Hello Universe');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.of('Hello World').replaceStart('Greetings', 'Hi').toString()).toEqual('Hello World');
+        });
+
+        test('handles empty subject string', (): void => {
+            expect(Str.replaceStart('Hello', 'Hi', '').toString()).toEqual('');
+        });
+
+        test('replaces when search and subject are the same', (): void => {
+            expect(Str.of('Hello').replaceStart('Hello', 'Hi').toString()).toEqual('Hi');
         });
     });
 
     describe('replaceLast', (): void => {
-        test('replaces the last occurrence of a given value in a string', (): void => {
+        test('replaces the last occurrence of the given value', (): void => {
             expect(Str.of('the quick brown fox jumps over the lazy dog').replaceLast('the', 'a').toString()).toEqual('the quick brown fox jumps over a lazy dog');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.of('the quick brown fox jumps over the lazy dog').replaceLast('baz', 'bar').toString()).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.of('the quick brown fox jumps over the lazy dog').replaceLast('', 'bar').toString()).toEqual('the quick brown fox jumps over the lazy dog');
+        });
+
+        test('replaces the only occurrence when it appears once', (): void => {
+            expect(Str.of('the quick brown fox').replaceLast('quick', 'slow').toString()).toEqual('the slow brown fox');
+        });
+
+        test('replaces the last occurrence when multiple exist', (): void => {
+            expect(Str.of('the quick the brown fox').replaceLast('the', 'a').toString()).toEqual('the quick a brown fox');
         });
     });
 
     describe('replaceEnd', (): void => {
         test('replaces the last occurrence of the given value only if it appears at the end of the string', (): void => {
             expect(Str.of('Hello World').replaceEnd('World', 'Laravel').toString()).toEqual('Hello Laravel');
+            expect(Str.of('Hello World').replaceEnd('Hello', 'Hi').toString()).toEqual('Hello World');
         });
 
-        test('does not replace the last occurrence of the given value if it does not appear at the end of the string', (): void => {
-            expect(Str.of('Hello World').replaceEnd('Hello', 'Laravel').toString()).toEqual('Hello World');
+        test('returns the subject when "search" string is empty', (): void => {
+            expect(Str.of('Hello World').replaceEnd('', 'Laravel').toString()).toEqual('Hello World');
+        });
+
+        test('replaces only at the end of the string', (): void => {
+            expect(Str.of('Hello Universe, Hello Universe').replaceEnd('Universe', 'World',).toString()).toEqual('Hello Universe, Hello World');
+        });
+
+        test('returns the subject when "search" string is not found', (): void => {
+            expect(Str.of('Hello Universe').replaceEnd('Greetings', 'World').toString()).toEqual('Hello Universe');
+        });
+
+        test('handles empty subject string', (): void => {
+            expect(Str.of('').replaceEnd('Hello', 'Hi').toString()).toEqual('');
+        });
+
+        test('replaces when search and subject are the same', (): void => {
+            expect(Str.of('Hello').replaceEnd('Hello', 'Hi').toString()).toEqual('Hi');
+        });
+
+        test('replaces only the ending match', (): void => {
+            expect(Str.of('This is the end of the end').replaceEnd('end', 'finish').toString()).toEqual('This is the end of the finish');
         });
     });
 
@@ -2257,12 +2764,25 @@ describe('Fluent Strings', (): void => {
         test('converts strings delimited by casing, hyphens, or underscores into a space delimited string with each word\'s first letter capitalized', (): void => {
             expect(Str.of('taylor_otwell').headline().toString()).toEqual('Taylor Otwell');
             expect(Str.of('EmailNotificationSent').headline().toString()).toEqual('Email Notification Sent');
+            expect(Str.of('too   many  spaces').headline().toString()).toEqual('Too Many Spaces');
         });
     });
 
     describe('apa', (): void => {
         test('converts the given string to title case following the APA guidelines', (): void => {
             expect(Str.of('a nice title uses the correct case').apa().toString()).toEqual('A Nice Title Uses the Correct Case');
+            expect(Str.of('the great gatsby').apa().toString()).toBe('The Great Gatsby');
+            expect(Str.of('the cat in the hat').apa().toString()).toBe('The Cat in the Hat');
+            expect(Str.of('to be or not to be').apa().toString()).toBe('To Be or Not to Be');
+            expect(Str.of('the mother-in-law').apa().toString()).toBe('The Mother-in-Law');
+            expect(Str.of('').apa().toString()).toBe('');
+            expect(Str.of('a').apa().toString()).toBe('A');
+            expect(Str.of('the').apa().toString()).toBe('The');
+            expect(Str.of('the end. the beginning').apa().toString()).toBe('The End. The Beginning');
+            expect(Str.of('tHe QuiCk bRoWn fOx').apa().toString()).toBe('The Quick Brown Fox');
+            expect(Str.of('the art of war').apa().toString()).toBe('The Art of War');
+            expect(Str.of('a tale of two cities').apa().toString()).toBe('A Tale of Two Cities');
+            expect(Str.of('the lord of the rings: the fellowship of the ring').apa().toString()).toBe('The Lord of the Rings: The Fellowship of the Ring');
         });
     });
 
@@ -2393,11 +2913,11 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('substr', (): void => {
-        test('returns the portion of the string specified by the given start and length parameters', (): void => {
+        test('returns the portion of the string specified by the given "start" value', (): void => {
             expect(Str.of('Laravel Framework').substr(8).toString()).toEqual('Framework');
         });
 
-        test('returns the portion of the string specified by the given start and length parameters', (): void => {
+        test('returns the portion of the string specified by the given "start" and "length" values', (): void => {
             expect(Str.of('Laravel Framework').substr(8, 5).toString()).toEqual('Frame');
         });
     });
@@ -2405,6 +2925,12 @@ describe('Fluent Strings', (): void => {
     describe('substrCount', (): void => {
         test('returns the number of occurrences of a given value in the given string', (): void => {
             expect(Str.of('If you like ice cream, you will like snow cones.').substrCount('like')).toEqual(2);
+        });
+
+        test('respects the "offset" and "length" values when counting occurrences', (): void => {
+            expect(Str.of('hello hello hello').substrCount('hello', 6)).toEqual(2);
+            expect(Str.of('hello hello hello').substrCount('hello', 0, 5)).toEqual(1);
+            expect(Str.of('hello hello hello').substrCount('hello', 6, 6)).toEqual(1);
         });
     });
 
@@ -2420,16 +2946,14 @@ describe('Fluent Strings', (): void => {
 
     describe('swap', (): void => {
         test('replaces multiple values in the string', (): void => {
-            expect(Str.of('Tacos are great!').swap({
-                'Tacos': 'Burritos',
-                'great': 'fantastic'
-            }).toString()).toEqual('Burritos are fantastic!');
+            expect(Str.of('Tacos are great!').swap({ 'Tacos': 'Burritos', 'great': 'fantastic' }).toString()).toEqual('Burritos are fantastic!');
         });
     });
 
     describe('take', (): void => {
         test('returns specified number of characters from the beginning of the string', (): void => {
             expect(Str.of('Build something amazing!').take(5).toString()).toEqual('Build');
+            expect(Str.of('Hello World').take(-5).toString()).toEqual('World');
         });
     });
 
@@ -2674,7 +3198,23 @@ describe('Fluent Strings', (): void => {
     });
 
     describe('words', (): void => {
+        test('returns the original string when words limit is not reached', (): void => {
+            expect(Str.of('Perfectly balanced, as all things should be.').words(10).toString()).toEqual('Perfectly balanced, as all things should be.');
+        });
+
+        test('returns the original string when it contains only one word', (): void => {
+            expect(Str.of('Word').words(3).toString()).toEqual('Word');
+        });
+
+        test('returns the original string when words limit equals the number of words', (): void => {
+            expect(Str.of('Perfectly balanced, as all things should be.').words(7).toString()).toEqual('Perfectly balanced, as all things should be.');
+        });
+
         test('limits the number of words in the string', (): void => {
+            expect(Str.of('Perfectly balanced, as all things should be.').words(3).toString()).toEqual('Perfectly balanced, as...');
+        });
+
+        test('prepends the end of the string', (): void => {
             expect(Str.of('Perfectly balanced, as all things should be.').words(3, ' >>>').toString()).toEqual('Perfectly balanced, as >>>');
         });
     });
@@ -2841,167 +3381,167 @@ describe('Fluent Strings', (): void => {
             expect(Str.of('Laravel').toDate()).toEqual('Invalid Date');
         });
 
-        test('format \'d\' returns the day of the month, 2 digits with leading zeros', (): void => {
+        test('format "d" returns the day of the month, 2 digits with leading zeros', (): void => {
             expect(Str.of('2024-02-29').toDate('d', 'CET')).toEqual('29');
         });
 
-        test('format \'D\' returns a textual representation of a day, three letters', (): void => {
+        test('format "D" returns a textual representation of a day, three letters', (): void => {
             expect(Str.of('2024-02-29').toDate('D', 'CET')).toEqual('Thu');
         });
 
-        test('format \'j\' returns the day of the month without leading zeros', (): void => {
+        test('format "j" returns the day of the month without leading zeros', (): void => {
             expect(Str.of('2024-02-29').toDate('j', 'CET')).toEqual('29');
         });
 
-        test('format \'l\' returns a full textual representation of the day of the week', (): void => {
+        test('format "l" returns a full textual representation of the day of the week', (): void => {
             expect(Str.of('2024-02-29').toDate('l', 'CET')).toEqual('Thursday');
         });
 
-        test('format \'N\' returns ISO 8601 numeric representation of the day of the week', (): void => {
+        test('format "N" returns ISO 8601 numeric representation of the day of the week', (): void => {
             expect(Str.of('2024-02-29').toDate('N', 'CET')).toEqual('4');
         });
 
-        test('format \'S\' returns English ordinal suffix for the day of the month, 2 characters', (): void => {
+        test('format "S" returns English ordinal suffix for the day of the month, 2 characters', (): void => {
             expect(Str.of('2024-02-29').toDate('S', 'CET')).toEqual('th');
         });
 
-        test('format \'w\' returns numeric representation of the day of the week', (): void => {
+        test('format "w" returns numeric representation of the day of the week', (): void => {
             expect(Str.of('2024-02-29').toDate('w', 'CET')).toEqual('4');
         });
 
-        test('format \'z\' returns numeric representation of the day of the week', (): void => {
+        test('format "z" returns numeric representation of the day of the week', (): void => {
             expect(Str.of('2024-02-29').toDate('z', 'CET')).toEqual('60');
         });
 
-        test('format \'W\' returns ISO 8601 week number of year, weeks starting on Monday', (): void => {
+        test('format "W" returns ISO 8601 week number of year, weeks starting on Monday', (): void => {
             expect(Str.of('2024-02-29').toDate('W', 'CET')).toEqual('09');
         });
 
-        test('format \'F\' returns a full textual representation of a month', (): void => {
+        test('format "F" returns a full textual representation of a month', (): void => {
             expect(Str.of('2024-02-29').toDate('F', 'CET')).toEqual('February');
         });
 
-        test('format \'m\' returns numeric representation of a month, with leading zeros', (): void => {
+        test('format "m" returns numeric representation of a month, with leading zeros', (): void => {
             expect(Str.of('2024-02-29').toDate('m', 'CET')).toEqual('02');
         });
 
-        test('format \'M\' returns a short textual representation of a month, three letters', (): void => {
+        test('format "M" returns a short textual representation of a month, three letters', (): void => {
             expect(Str.of('2024-02-29').toDate('M', 'CET')).toEqual('Feb');
         });
 
-        test('format \'n\' returns numeric representation of a month, without leading zeros', (): void => {
+        test('format "n" returns numeric representation of a month, without leading zeros', (): void => {
             expect(Str.of('2024-02-29').toDate('n', 'CET')).toEqual('2');
         });
 
-        test('format \'t\' returns number of days in the given month', (): void => {
+        test('format "t" returns number of days in the given month', (): void => {
             expect(Str.of('2024-02-29').toDate('t', 'CET')).toEqual('29');
         });
 
-        test('format \'L\'\' returns whether it"s a leap year', (): void => {
+        test('format "L"\' returns whether it"s a leap year', (): void => {
             expect(Str.of('2024-02-29').toDate('L', 'CET')).toEqual('1');
         });
 
-        test('format \'o\' returns ISO 8601 week-numbering year', (): void => {
+        test('format "o" returns ISO 8601 week-numbering year', (): void => {
             expect(Str.of('2024-02-29').toDate('o', 'CET')).toEqual('2024');
         });
 
-        test('format \'X\' returns an expanded full numeric representation of a year', (): void => {
+        test('format "X" returns an expanded full numeric representation of a year', (): void => {
             expect(Str.of('2024-02-29').toDate('X', 'CET')).toEqual('+2024');
         });
 
-        test('format \'x\' returns an expanded full numeric representation if required', (): void => {
+        test('format "x" returns an expanded full numeric representation if required', (): void => {
             expect(Str.of('2024-02-29').toDate('x', 'CET')).toEqual('2024');
         });
 
-        test('format \'Y\' returns a full numeric representation of a year', (): void => {
+        test('format "Y" returns a full numeric representation of a year', (): void => {
             expect(Str.of('2024-02-29').toDate('Y', 'CET')).toEqual('2024');
         });
 
-        test('format \'y\' returns a two-digit representation of a year', (): void => {
+        test('format "y" returns a two-digit representation of a year', (): void => {
             expect(Str.of('2024-02-29').toDate('y', 'CET')).toEqual('24');
         });
 
-        test('format \'a\' returns lowercase Ante meridiem and Post meridiem', (): void => {
+        test('format "a" returns lowercase Ante meridiem and Post meridiem', (): void => {
             expect(Str.of('2024-02-29 08:00:00').toDate('a', 'CET')).toEqual('am');
         });
 
-        test('format \'A\' returns uppercase Ante meridiem and Post meridiem', (): void => {
+        test('format "A" returns uppercase Ante meridiem and Post meridiem', (): void => {
             expect(Str.of('2024-02-29 20:00:00').toDate('A', 'CET')).toEqual('PM');
         });
 
-        test('format \'B\' returns Swatch Internet time', (): void => {
+        test('format "B" returns Swatch Internet time', (): void => {
             expect(Str.of('2024-02-29 12:00:00').toDate('B', 'CET')).toEqual('500');
         });
 
-        test('format \'g\' returns 12-hour format of an hour without leading zeros', (): void => {
+        test('format "g" returns 12-hour format of an hour without leading zeros', (): void => {
             expect(Str.of('2024-02-29 08:00:00').toDate('g', 'CET')).toEqual('8');
         });
 
-        test('format \'G\' returns 24-hour format of an hour without leading zeros', (): void => {
+        test('format "G" returns 24-hour format of an hour without leading zeros', (): void => {
             expect(Str.of('2024-02-29 20:00:00').toDate('G', 'CET')).toEqual('20');
         });
 
-        test('format \'h\' returns 12-hour format of an hour with leading zeros', (): void => {
+        test('format "h" returns 12-hour format of an hour with leading zeros', (): void => {
             expect(Str.of('2024-02-29 08:00:00').toDate('h', 'CET')).toEqual('08');
         });
 
-        test('format \'H\' returns 24-hour format of an hour with leading zeros', (): void => {
+        test('format "H" returns 24-hour format of an hour with leading zeros', (): void => {
             expect(Str.of('2024-02-29 20:00:00').toDate('H', 'CET')).toEqual('20');
         });
 
-        test('format \'i\' returns minutes with leading zeros', (): void => {
+        test('format "i" returns minutes with leading zeros', (): void => {
             expect(Str.of('2024-02-29 08:09:00').toDate('i', 'CET')).toEqual('09');
         });
 
-        test('format \'s\' returns seconds with leading zeros', (): void => {
+        test('format "s" returns seconds with leading zeros', (): void => {
             expect(Str.of('2024-02-29 08:09:07').toDate('s', 'CET')).toEqual('07');
         });
 
-        test('format \'u\' returns microseconds', (): void => {
+        test('format "u" returns microseconds', (): void => {
             expect((): string => Str.of('2024-02-29 08:09:07.654321').toDate('u', 'CET')).toThrow('Microseconds are not supported.');
         });
 
-        test('format \'v\' returns milliseconds', (): void => {
+        test('format "v" returns milliseconds', (): void => {
             expect(Str.of('2024-02-29 08:09:07.654').toDate('v', 'CET')).toEqual('654');
         });
 
-        test('format \'e\' returns timezone identifier', (): void => {
+        test('format "e" returns timezone identifier', (): void => {
             expect(Str.of('2024-02-29 08:09:07').toDate('e', 'CET')).toMatch(/^(?:GMT|UTC|[A-Za-z\/_]+(?:[+\-][0-9]+)?)$/);
         });
 
-        test('format \'I\' returns whether or not the date is in daylight saving time', (): void => {
+        test('format "I" returns whether or not the date is in daylight saving time', (): void => {
             expect(Str.of('2024-02-29').toDate('I', 'CET')).toMatch(/^[01]$/);
         });
 
-        test('format \'O\' returns difference to Greenwich time (GMT) without colon between hours and minutes', (): void => {
+        test('format "O" returns difference to Greenwich time (GMT) without colon between hours and minutes', (): void => {
             expect(Str.of('2024-02-29').toDate('O', 'CET')).toMatch(/^[+\-]\d{4}$/);
         });
 
-        test('format \'P\' returns difference to Greenwich time (GMT) with colon between hours and minutes', (): void => {
+        test('format "P" returns difference to Greenwich time (GMT) with colon between hours and minutes', (): void => {
             expect(Str.of('2024-02-29').toDate('P', 'CET')).toMatch(/^[+\-]\d{2}:\d{2}$/);
         });
 
-        test('format \'p\' returns the same as P, but returns Z instead of +00:00', (): void => {
+        test('format "p" returns the same as P, but returns Z instead of +00:00', (): void => {
             expect(Str.of('2024-02-29').toDate('p', 'CET')).toMatch(/^[+\-]\d{2}:\d{2}$/);
         });
 
-        test('format \'T\' returns timezone abbreviation, if known; otherwise the GMT offset', (): void => {
+        test('format "T" returns timezone abbreviation, if known; otherwise the GMT offset', (): void => {
             expect(Str.of('2024-02-29').toDate('T', 'CET')).toMatch(/^[A-Za-z]+|[+\-]\d{2}:\d{2}$/);
         });
 
-        test('format \'Z\' returns timezone offset in seconds', (): void => {
+        test('format "Z" returns timezone offset in seconds', (): void => {
             expect(Str.of('2024-02-29').toDate('Z', 'CET')).toMatch(/([+\-]?\d+)/);
         });
 
-        test('format \'c\' returns ISO 8601 date', (): void => {
+        test('format "c" returns ISO 8601 date', (): void => {
             expect(Str.of('2024-02-29 08:09:07').toDate('c', 'CET')).toEqual('2024-02-29T08:09:07+01:00');
         });
 
-        test('format \'r\' returns seconds since the Unix Epoch', (): void => {
+        test('format "r" returns seconds since the Unix Epoch', (): void => {
             expect(Str.of('2024-02-29').toDate('r', 'CET')).toEqual('Thu, 29 Feb 2024 01:00:00 +0100');
         });
 
-        test('format \'U\' returns RFC 2822/RFC 5322 formatted date', (): void => {
+        test('format "U" returns RFC 2822/RFC 5322 formatted date', (): void => {
             expect(Str.of('2024-02-29').toDate('U', 'CET')).toMatch(/^-?\d+$/);
         });
     });

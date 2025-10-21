@@ -134,7 +134,7 @@ export class Str {
             return subject;
         }
 
-        const position: number | null = subject.lastIndexOf(search) ?? null;
+        const position: number = subject.lastIndexOf(search);
 
         if (position === -1) {
             return subject;
@@ -422,13 +422,11 @@ export class Str {
     static excerpt(text: string, phrase: string = '', options: ExcerptOptions = {}): string | null {
         const radius: number = options.radius ?? 100;
         const omission: string = options.omission ?? '...';
-        const results: string[] = text.split(phrase);
+        const matches: RegExpMatchArray | null = text.match(new RegExp(`^(.*?)(${preg_quote(phrase)})(.*)$`, 'iu'));
 
-        if (results.length === 1) {
+        if (matches === null) {
             return null;
         }
-
-        const matches: string[] = [text, (results[0] as string), phrase, results.splice(1).join(phrase)];
 
         let start: string = (matches[1] as string).trimStart();
         let end: string = (matches[3] as string).trimEnd();
@@ -447,7 +445,7 @@ export class Str {
                 (endWithRadius: Stringable): Stringable => endWithRadius.append(omission))
             .toString();
 
-        return (start + ' ' + matches[2] + end).replace(/\s+/g, ' ').trim();
+        return this.of(start).append(matches[2] as string, end).toString();
     }
 
     /**
@@ -519,7 +517,7 @@ export class Str {
 
             pattern = pattern.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/\\\*/g, '.*');
 
-            const regex: RegExp = new RegExp('^' + pattern + '$', ignoreCase ? 'iu' : 'u');
+            const regex: RegExp = new RegExp(`^${pattern}$`, ignoreCase ? 'iu' : 'u');
 
             if (regex.test(value)) {
                 return true;
@@ -566,9 +564,9 @@ export class Str {
      * @return { boolean }
      */
     static isUrl(value: string, protocols: string[] = []): boolean {
-        const protocolPattern: string = protocols.length === 0 ? 'https?|ftp|file|mailto|tel|data|irc|magnet' : protocols.join('|');
+        const protocol: string = protocols.length === 0 ? 'https?|ftp|file|mailto|tel|data|irc|magnet' : protocols.join('|');
 
-        const pattern: RegExp = new RegExp(`^(?:${protocolPattern}):\\/\\/(?:[\\w-]+(?:\\.[\\w-]+)+|localhost|\\d{1,3}(?:\\.\\d{1,3}){3})(?::\\d+)?(?:\\S*)?$`, 'i');
+        const pattern: RegExp = new RegExp(`^(?:${protocol}):\\/\\/(?:[\\w-]+(?:\\.[\\w-]+)+|localhost|\\d{1,3}(?:\\.\\d{1,3}){3})(?::\\d+)?(?:\\S*)?$`, 'i');
 
         return pattern.test(value);
     }
@@ -592,6 +590,10 @@ export class Str {
      * @return { boolean }
      */
     static isUlid(value: string): boolean {
+        if (typeof value !== 'string') {
+            return false;
+        }
+
         if (value.length !== 26) {
             return false;
         }
@@ -600,7 +602,7 @@ export class Str {
             return false;
         }
 
-        return Number(value.charAt(0)) <= 7;
+        return parseInt(value.charAt(0)) <= 7;
     }
 
     /**
@@ -868,7 +870,7 @@ export class Str {
         }
 
         // List of rules for plural words.
-        const plural: { [key: string]: string } = {
+        const plural: Record<string, string> = {
             // Special cases (unchanged plurals)
             '^(.*)menu$': '$1menus',
             '^tights$'  : 'tights',
@@ -972,7 +974,7 @@ export class Str {
         };
 
         // List of words that change irregularly.
-        const irregular: { [key: string]: string } = {
+        const irregular: Record<string, string> = {
             // A
             'abuse'    : 'abuses',
             'alumna'   : 'alumnae',
@@ -1580,28 +1582,6 @@ export class Str {
     }
 
     /**
-     * Convert the given value to a string or return the given fallback on failure.
-     *
-     * @param { * } value
-     * @param { string } fallback
-     *
-     * @return { string }
-     */
-    static toStringOr(value: any, fallback: string): string {
-        try {
-            let result: string = String(value);
-
-            if (result === 'undefined' || result === 'null') {
-                return fallback;
-            }
-
-            return result;
-        } catch {
-            return fallback;
-        }
-    }
-
-    /**
      * Replace the given value in the given string.
      *
      * @param { string | string[] } search
@@ -1648,7 +1628,7 @@ export class Str {
 
         let position: number = subject.indexOf(search);
 
-        if (position !== undefined) {
+        if (position !== -1) {
             return subject.replace(search, replace);
         }
 
@@ -1692,7 +1672,7 @@ export class Str {
 
         let position: number = subject.lastIndexOf(search);
 
-        if (position !== 0) {
+        if (position !== -1) {
             return subject.substring(0, position) + replace + subject.substring(position + search.length);
         }
 
@@ -1907,7 +1887,7 @@ export class Str {
      */
     static singular(value: string): string {
         // List of rules for singular words.
-        const singular: { [key: string]: string } = {
+        const singular: Record<string, string> = {
             // Special cases
             '^(.*)(menu)s$': '$1$2',
             '^tights$'     : 'tights',
@@ -2013,7 +1993,7 @@ export class Str {
         };
 
         // List of words that change irregularly.
-        const irregular: { [key: string]: string } = {
+        const irregular: Record<string, string> = {
             // A
             'abuses'    : 'abuse',
             'alumnae'   : 'alumna',
@@ -2416,7 +2396,7 @@ export class Str {
      *
      * @return { string }
      */
-    static slug(title: string, separator: string = '-', dictionary: { [key: string]: string } = { '@': 'at' }): string {
+    static slug(title: string, separator: string = '-', dictionary: Record<string, string> = { '@': 'at' }): string {
         let flip: string = separator === '-' ? '_' : '-';
 
         title = title.replace(`![${preg_quote(flip)}]+!u`, separator);
@@ -2619,12 +2599,12 @@ export class Str {
             }
         }
 
-        if (length !== null && length < 0) {
+        if (length !== null && length <= 0) {
             return '';
         }
 
-        if (length === 0 || length === null) {
-            return string.substring(start, length ?? string.length);
+        if (length === null || length === 0) {
+            return string.substring(start, string.length);
         }
 
         return string.substring(start, start + length);
@@ -3106,8 +3086,34 @@ export class Str {
     static createUlidsNormally(): void {
         this.ulidFactory = null;
     }
+
+    /**
+     * Convert the given value to a string or return the given fallback on failure.
+     *
+     * @param { * } value
+     * @param { string } fallback
+     *
+     * @return { string }
+     */
+    private static toStringOr(value: any, fallback: string): string {
+        if (value === null || value === undefined || typeof value === 'object' || typeof value === 'function') {
+            return fallback;
+        }
+
+        return String(value);
+    }
 }
 
+/**
+ * @typedef Value
+ * @type { Stringable | boolean | ((instance: Stringable) => Stringable|boolean) }
+ *
+ * @typedef Callback
+ * @type { (instance: Stringable, value: boolean) => Stringable | void | undefined }
+ *
+ * @typedef Fallback
+ * @type { Callback | null }
+ */
 export class Stringable {
     /**
      * The underlying string value.
@@ -3651,7 +3657,7 @@ export class Stringable {
      *
      * @return { boolean }
      */
-    isMatch(pattern: RegExp | RegExp[]): boolean {
+    isMatch(...pattern: RegExp[]): boolean {
         return Str.isMatch(pattern, this.#value);
     }
 
@@ -3988,7 +3994,7 @@ export class Stringable {
      *
      * @return { Stringable }
      */
-    slug(separator: string = '-', dictionary: { [key: string]: string } = { '@': 'at' }): Stringable {
+    slug(separator: string = '-', dictionary: Record<string, string> = { '@': 'at' }): Stringable {
         return new Stringable(Str.slug(this.#value, separator, dictionary));
     }
 
@@ -4659,15 +4665,7 @@ export class Stringable {
 
                 // English ordinal suffix for the day of the month, 2 characters (e.g., st, nd, rd or th)
                 case 'S': {
-                    let suffix: { [key: number]: string } = {
-                        1 : 'st',
-                        2 : 'nd',
-                        3 : 'rd',
-                        21: 'st',
-                        22: 'nd',
-                        23: 'rd',
-                        31: 'st'
-                    };
+                    let suffix: Record<number, string> = { 1: 'st', 2: 'nd', 3: 'rd', 21: 'st', 22: 'nd', 23: 'rd', 31: 'st' };
                     date += suffix[dayOfTheMonth] ?? 'th';
 
                     break;
@@ -4863,10 +4861,7 @@ export class Stringable {
                 }
                 // Difference to Greenwich time (GMT) without colon between hours and minutes (e.g., +0200)
                 case 'O': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined, })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4878,10 +4873,7 @@ export class Stringable {
 
                 // Difference to Greenwich time (GMT) with colon between hours and minutes (e.g., +02:00)
                 case 'P': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4893,10 +4885,7 @@ export class Stringable {
 
                 // The same as P, but returns Z instead of +00:00 (e.g., +02:00)
                 case 'p': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined, })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4908,10 +4897,7 @@ export class Stringable {
 
                 // Timezone abbreviation, if known; otherwise the GMT offset (e.g., EST, MDT, +05)
                 case 'T': {
-                    const timeZoneData: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'short',
-                        timeZone    : tz ?? undefined,
-                    })
+                    const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'short', timeZone: tz ?? undefined, })
                         .split(', ')
                         .pop()!
                         .trim();
@@ -4925,10 +4911,7 @@ export class Stringable {
                 // The offset for timezones west of UTC is always negative,
                 // and for those east of UTC is always positive. (e.g., -43200 through 50400)
                 case 'Z': {
-                    const timezone: string = now.toLocaleDateString('en-us', {
-                        timeZoneName: 'longOffset',
-                        timeZone    : tz ?? undefined
-                    });
+                    const timezone: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined });
                     const symbol: RegExpMatchArray | null = timezone.match(/[+-]/);
                     const data: string[] = timezone.split(/[+-]/);
 
