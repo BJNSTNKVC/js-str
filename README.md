@@ -1230,6 +1230,24 @@ Str.ucfirst('foo bar');
 // 'Foo bar'
 ```
 
+#### Str.ucwords()
+
+The `Str.ucwords` method capitalize the first character of each word in a string:
+
+```js
+Str.ucwords('foo bar');
+
+// 'Foo Bar'
+```
+
+You can also a custom separator:
+
+```js
+Str.ucwords('foo-bar', '-');
+
+// 'Foo-Bar'
+```
+
 #### Str.ucsplit()
 
 The `Str.ucsplit` method splits the given string into an array by uppercase characters:
@@ -2813,6 +2831,24 @@ The `ucfirst` method returns the given string with the first character capitaliz
 Str.of('foo bar').ucfirst();
 
 // 'Foo bar'
+```
+
+#### ucwords
+
+The `ucwords` method capitalize the first character of each word in a string:
+
+```js
+Str.of('foo bar').ucwords();
+
+// 'Foo Bar'
+```
+
+You can also a custom separator:
+
+```js
+Str.of('foo-bar').ucwords('-');
+
+// 'Foo-Bar'
 ```
 
 #### ucsplit

@@ -1323,6 +1323,19 @@ describe('Str', (): void => {
         });
     });
 
+    describe('Str.ucwords', (): void => {
+        test('returns the given string with the first character of each word capitalized', (): void => {
+            expect(Str.ucwords('laravel')).toEqual('Laravel');
+            expect(Str.ucwords('laravel framework')).toEqual('Laravel Framework');
+            expect(Str.ucwords('мама')).toEqual('Мама');
+            expect(Str.ucwords('мама мыла раму')).toEqual('Мама Мыла Раму');
+        });
+
+        test('handles custom separators when capitalizing words', (): void => {
+            expect(Str.ucwords('laravel-framework', '-')).toEqual('Laravel-Framework');
+        });
+    });
+
     describe('Str.ucfirst', (): void => {
         test('returns the given string with the first character capitalized', (): void => {
             expect(Str.ucfirst('foo bar')).toEqual('Foo bar');
@@ -3002,6 +3015,19 @@ describe('Stringable', (): void => {
     describe('ucfirst', (): void => {
         test('returns the given string with the first character capitalized', (): void => {
             expect(Str.of('foo bar').ucfirst().toString()).toEqual('Foo bar');
+        });
+    });
+
+    describe('ucwords', (): void => {
+        test('returns the given string with the first character of each word capitalized', (): void => {
+            expect(Str.of('laravel').ucwords().toString()).toEqual('Laravel');
+            expect(Str.of('laravel framework').ucwords().toString()).toEqual('Laravel Framework');
+            expect(Str.of('мама').ucwords().toString()).toEqual('Мама');
+            expect(Str.of('мама мыла раму').ucwords().toString()).toEqual('Мама Мыла Раму');
+        });
+
+        test('handles custom separators when capitalizing words', (): void => {
+            expect(Str.of('laravel-framework').ucwords('-').toString()).toEqual('Laravel-Framework');
         });
     });
 
