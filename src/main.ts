@@ -213,11 +213,11 @@ export class Str {
 
         needle = Array.isArray(needle) ? needle : [needle];
 
-        needle.forEach((word: string): void => {
+        for (const word of needle) {
             if (subject.startsWith(word)) {
                 results = subject.substring(word.length);
             }
-        });
+        }
 
         return results;
     }
@@ -236,11 +236,11 @@ export class Str {
 
         needle = Array.isArray(needle) ? needle : [needle];
 
-        needle.forEach((word: string): void => {
+        for (const word of needle) {
             if (subject.endsWith(word)) {
                 results = subject.substring(0, subject.length - word.length);
             }
-        });
+        }
 
         return results;
     }
@@ -255,25 +255,23 @@ export class Str {
      * @return { boolean }
      */
     static contains(haystack: string, needles: string | string[], ignoreCase: boolean = false): boolean {
-        let result: boolean = false;
-
         if (ignoreCase) {
             haystack = haystack.toLowerCase();
         }
 
         needles = Array.isArray(needles) ? needles : [needles];
 
-        needles.forEach((needle: string): void => {
+        for (let needle of needles) {
             if (ignoreCase) {
                 needle = needle.toLowerCase();
             }
 
             if (needle !== '' && haystack.includes(needle)) {
-                result = true;
+                return true;
             }
-        });
+        }
 
-        return result;
+        return false;
     }
 
     /**
@@ -286,15 +284,13 @@ export class Str {
      * @return { boolean }
      */
     static containsAll(haystack: string, needles: string[], ignoreCase: boolean = false): boolean {
-        let result: boolean = true;
-
-        needles.forEach((needle: string): void => {
-            if (!this.contains(haystack, needle, ignoreCase)) {
-                result = false;
+        for (const needle of needles) {
+            if (this.doesntContain(haystack, needle, ignoreCase)) {
+                return false;
             }
-        });
+        }
 
-        return result;
+        return true;
     }
 
     /**
@@ -602,7 +598,7 @@ export class Str {
             return false;
         }
 
-        return parseInt(value.charAt(0)) <= 7;
+        return Number.parseInt(value.charAt(0)) <= 7;
     }
 
     /**
@@ -764,17 +760,15 @@ export class Str {
      * @return { boolean }
      */
     static isMatch(pattern: RegExp | RegExp[], value: string): boolean {
-        let result: boolean = false;
-
         pattern = Array.isArray(pattern) ? pattern : [pattern];
 
-        pattern.forEach((item: RegExp): void => {
+        for (const item of pattern) {
             if (item.exec(value)) {
-                result = true;
+                return true;
             }
-        });
+        }
 
-        return result;
+        return false;
     }
 
     /**
@@ -1148,7 +1142,7 @@ export class Str {
         };
 
         // List of words that do not change.
-        const uncountable: string[] = [
+        const uncountable: Set<string> = new Set([
             // A
             'advice',
             'aircraft',
@@ -1344,9 +1338,9 @@ export class Str {
             // Y
             'yengeese',
             'you'
-        ];
+        ]);
 
-        if (uncountable.indexOf(value.toLowerCase()) >= 0) {
+        if (uncountable.has(value.toLowerCase())) {
             return matchCase(value, value);
         }
 
@@ -1455,7 +1449,7 @@ export class Str {
             password.push(options[index] as string);
         }
 
-        return password.sort((): number => Math.random() - 0.5).reduce((previous: string, current: string): string => current + previous);
+        return password.toSorted((): number => Math.random() - 0.5).reduce((previous: string, current: string): string => current + previous, '');
     }
 
     /**
@@ -1470,7 +1464,7 @@ export class Str {
     static position(haystack: string, needle: string, offset: number = 0): number | false {
         const position: number = haystack.indexOf(needle, Math.max(offset, 0));
 
-        return position !== -1 ? position : false;
+        return position === -1 ? false : position;
     }
 
     /**
@@ -1491,7 +1485,9 @@ export class Str {
 
         let string: string = btoa(bytes);
 
-        ['/', '+', '='].forEach((character: string): string => string = string.replace(character, ''));
+        for (const character of ['/', '+', '=']) {
+            string = string.replace(character, '');
+        }
 
         return string.substring(0, length);
     }
@@ -1576,7 +1572,9 @@ export class Str {
 
         let result: string = segments.shift()!;
 
-        segments.forEach((segment: string): string => result += Str.toStringOr(replace.shift() ?? search, search) + segment);
+        for (const segment of segments) {
+            result += Str.toStringOr(replace.shift() ?? search, search) + segment;
+        }
 
         return result;
     }
@@ -1596,7 +1594,8 @@ export class Str {
     static replace(search: string | string[], replace: string | string[], subject: string | string[], caseSensitive: boolean = true): string | string[] {
         search = Array.isArray(search) ? search : [search];
 
-        search.forEach((term: string | RegExp, index: number): void => {
+        for (const term of search) {
+            const index: number = search.indexOf(term);
             const $subject: string = Array.isArray(subject) ? subject[index] ?? '' : subject;
             const $replace: string = Array.isArray(replace) ? replace[index] ?? '' : replace;
             const pattern: string | RegExp = caseSensitive ? term : new RegExp(term, 'gi');
@@ -1607,7 +1606,7 @@ export class Str {
             } else {
                 subject = replacement;
             }
-        });
+        }
 
         return subject;
     }
@@ -1713,12 +1712,13 @@ export class Str {
     static replaceMatches(pattern: RegExp | RegExp[], replace: string | string[] | ((match: string[]) => string), subject: string, limit: number = -1): string {
         const patterns: RegExp[] = Array.isArray(pattern) ? pattern : [pattern];
 
-        patterns.forEach((pattern: RegExp, index: number) => {
+        for (const pattern of patterns) {
+            const index: number = patterns.indexOf(pattern);
             const flags: string = [...new Set([...(pattern.toString().match(/[gimsuy]/g) || []), 'g'])].join('');
             const expression: RegExp = new RegExp(pattern, flags);
             let count: number = 0;
 
-            if (replace instanceof Function) {
+            if (typeof replace === 'function') {
                 subject = subject.replace(expression, (substring: string, ...args: any[]): string => {
                     if (limit < 0 || count < limit) {
                         count++;
@@ -1741,7 +1741,7 @@ export class Str {
                     return match;
                 });
             }
-        });
+        }
 
         return subject;
     }
@@ -1844,12 +1844,12 @@ export class Str {
             return value;
         }
 
-        const minorWords: string[] = [
+        const minorWords: Set<string> = new Set([
             'and', 'as', 'but', 'for', 'if', 'nor', 'or', 'so', 'yet', 'a', 'an',
-            'the', 'at', 'by', 'for', 'in', 'of', 'off', 'on', 'per', 'to', 'up', 'via',
-        ];
+            'the', 'at', 'by', 'in', 'of', 'off', 'on', 'per', 'to', 'up', 'via',
+        ]);
 
-        const endPunctuation: string[] = ['.', '!', '?', ':', '—', ','];
+        const endPunctuation: Set<string> = new Set(['.', '!', '?', ':', '—', ',']);
 
         let words: string[] = value.split(/\s+/).filter(Boolean);
 
@@ -1861,14 +1861,10 @@ export class Str {
             if (lowercaseWord.includes('-')) {
                 let hyphenatedWords: string[] = lowercaseWord.split('-');
 
-                hyphenatedWords = hyphenatedWords.map((part: string): string =>
-                    (minorWords.includes(part) && part.length <= 3) ? part : this.ucfirst(part)
-                );
+                hyphenatedWords = hyphenatedWords.map((part: string): string => (minorWords.has(part) && part.length <= 3) ? part : this.ucfirst(part));
 
                 words[i] = hyphenatedWords.join('-');
-            } else if (minorWords.includes(lowercaseWord) &&
-                lowercaseWord.length <= 3 &&
-                !(i === 0 || endPunctuation.includes((words[i - 1] as string).slice(-1)))) {
+            } else if (minorWords.has(lowercaseWord) && lowercaseWord.length <= 3 && !(i === 0 || endPunctuation.has((words[i - 1] as string).slice(-1)))) {
                 words[i] = lowercaseWord;
             } else {
                 words[i] = this.ucfirst(lowercaseWord);
@@ -2166,7 +2162,7 @@ export class Str {
         };
 
         // List of words that do not change.
-        const uncountable: string[] = [
+        const uncountable: Set<string> = new Set([
             // A
             'advice',
             'aircraft',
@@ -2362,9 +2358,9 @@ export class Str {
             // Y
             'yengeese',
             'you'
-        ];
+        ]);
 
-        if (uncountable.indexOf(value.toLowerCase()) >= 0) {
+        if (uncountable.has(value.toLowerCase())) {
             return matchCase(value, value);
         }
 
@@ -2479,7 +2475,9 @@ export class Str {
             return this.replaceStart(' ', '', value);
         }
 
-        characters.split('').forEach((character: string): string => value = this.replaceStart(character, '', value));
+        for (const character of characters.split('')) {
+            value = this.replaceStart(character, '', value);
+        }
 
         return value;
     }
@@ -2505,7 +2503,9 @@ export class Str {
             return this.replaceEnd(' ', '', value);
         }
 
-        characters.split('').forEach((character: string): string => value = this.replaceEnd(character, '', value));
+        for (const character of characters.split('')) {
+            value = this.replaceEnd(character, '', value);
+        }
 
         return value;
     }
@@ -2530,17 +2530,15 @@ export class Str {
      * @return { boolean }
      */
     static startsWith(haystack: string, needles: string | string[]): boolean {
-        let result: boolean = false;
-
         needles = Array.isArray(needles) ? needles : [needles];
 
-        needles.forEach((needle: string): void => {
+        for (const needle of needles) {
             if (needle !== '' && haystack.startsWith(needle)) {
-                result = true;
+                return true;
             }
-        });
+        }
 
-        return result;
+        return false;
     }
 
     /**
@@ -2723,6 +2721,20 @@ export class Str {
     }
 
     /**
+     * Capitalize the first character of each word in a string.
+     *
+     * @param { string } string
+     * @param { string } separators
+     *
+     * @return { string }
+     */
+    static ucwords(string: string, separators: string = ' \t\r\n\f\v'): string {
+        const pattern: RegExp = new RegExp(`(^|[${preg_quote(separators, '/')}])(\\p{Ll})`, 'gu');
+
+        return string.replace(pattern, (match: string): string => match.toUpperCase());
+    }
+
+    /**
      * Split a string into pieces by uppercase characters.
      *
      * @param { string } string
@@ -2772,10 +2784,10 @@ export class Str {
             return this.uuidFactory();
         }
 
-        let time: number = parseInt((Math.random() * Number.MAX_SAFE_INTEGER + 1).toString().substring(0, 13));
+        let time: number = Number.parseInt((Math.random() * Number.MAX_SAFE_INTEGER + 1).toString().substring(0, 13));
 
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (character: string): string {
-            let randomChar: number = (time + Math.random() * 16) % 16 | 0;
+            let randomChar: number = Math.trunc((time + Math.random() * 16) % 16);
             time = Math.floor(time / 16);
 
             return (character === 'x' ? randomChar : (randomChar & 0x3 | 0x8)).toString(16);
@@ -2853,10 +2865,10 @@ export class Str {
             return this.uuidFactory();
         }
 
-        let time: number = new Date().getTime();
+        let time: number = Date.now();
 
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (character: string): string {
-            let randomChar: number = (time + Math.random() * 16) % 16 | 0;
+            let randomChar: number = Math.trunc((time + Math.random() * 16) % 16);
             time = Math.floor(time / 16);
 
             return (character === 'x' ? randomChar : (randomChar & 0x3 | 0x8)).toString(16);
@@ -2962,11 +2974,12 @@ export class Str {
          */
         function generateEncodedTime(): string {
             let encodedTime: string = '';
-            let now: number = new Date().getTime();
+            let now: number = Date.now();
 
             for (let length: number = timeLength; length > 0; length--) {
                 const mod: number = now % encodingLength;
                 encodedTime = encoding.charAt(mod) + encodedTime;
+
                 now = (now - mod) / encodingLength;
             }
 
@@ -3737,7 +3750,7 @@ export class Stringable {
      */
     pipe(callback: keyof string | ((instance: this) => any)): Stringable {
         if (typeof callback === 'string') {
-            if ((this.#value as any)[callback] instanceof Function) {
+            if (typeof (this.#value as any)[callback] === 'function') {
                 return new Stringable((this.#value as any)[callback]());
             }
         }
@@ -4178,6 +4191,17 @@ export class Stringable {
     }
 
     /**
+     * Capitalize the first character of each word in a string.
+     *
+     * @param { string } separators
+     *
+     * @return { Stringable }
+     */
+    ucwords(separators: string = ' \t\r\n\f\v'): Stringable {
+        return new Stringable(Str.ucwords(this.#value, separators));
+    }
+
+    /**
      * Split a string by uppercase characters.
      *
      * @return { string[] }
@@ -4196,7 +4220,7 @@ export class Stringable {
      * @return { Stringable }
      */
     when(value: Value<this>, callback: Callback<this>, fallback: Fallback<this> = null): this {
-        value = value instanceof Function ? value(this) : value;
+        value = typeof value === 'function' ? value(this) : value;
 
         if (value) {
             return callback(this, value) ?? this;
@@ -4217,7 +4241,7 @@ export class Stringable {
      * @return { this }
      */
     unless(value: Value<this>, callback: Callback<this>, fallback: Fallback<this> = null): this {
-        value = value instanceof Function ? value(this) : value;
+        value = typeof value === 'function' ? value(this) : value;
 
         if (!value) {
             return callback(this, value) ?? this;
@@ -4549,9 +4573,9 @@ export class Stringable {
      * @return { number }
      */
     toInteger(base: number = 10): number {
-        const value: number = parseInt(this.#value, base);
+        const value: number = Number.parseInt(this.#value, base);
 
-        return isNaN(value) || !isFinite(value) ? 0 : value;
+        return Number.isNaN(value) || !Number.isFinite(value) ? 0 : value;
     }
 
     /**
@@ -4560,7 +4584,9 @@ export class Stringable {
      * @return { number }
      */
     toFloat(): number {
-        return !isNaN(parseFloat(this.#value)) ? parseFloat(this.#value) : 0;
+        const value: number = Number.parseFloat(this.#value);
+
+        return Number.isNaN(value) ? 0 : value;
     }
 
     /**
@@ -4659,7 +4685,7 @@ export class Stringable {
 
                 // ISO 8601 numeric representation of the day of the week (e.g., 1 (for Monday) through 7 (for Sunday))
                 case 'N':
-                    date += dayOfTheWeek !== 0 ? dayOfTheWeek : 0;
+                    date += dayOfTheWeek;
 
                     break;
 
@@ -4670,6 +4696,7 @@ export class Stringable {
 
                     break;
                 }
+
                 // Numeric representation of the day of the week (e.g., 0 (for Sunday) through 6 (for Saturday))
                 case 'w':
                     date += dayOfTheWeek;
@@ -4687,6 +4714,7 @@ export class Stringable {
 
                     break;
                 }
+
                 // ISO 8601 week number of year, weeks starting on Monday (e.g., 42 (the 42nd week in the year))
                 case 'W': {
                     let parsedDate: Date = new Date(Date.UTC(year, month, dayOfTheMonth));
@@ -4701,6 +4729,7 @@ export class Stringable {
 
                     break;
                 }
+
                 // A full textual representation of a month, such as January or March (e.g., January through December)
                 case 'F':
                     date += now.toLocaleString('en-US', { month: 'long' });
@@ -4715,6 +4744,7 @@ export class Stringable {
 
                     break;
                 }
+
                 // A short textual representation of a month, three letters (e.g., Jan through Dec)
                 case 'M':
                     date += now.toLocaleString('en-US', { month: 'short' });
@@ -4796,6 +4826,7 @@ export class Stringable {
 
                     break;
                 }
+
                 // 12-hour format of an hour without leading zeros (e.g., 1 through 12)
                 case 'g':
                     date += hours > 12 ? hours - 12 : hours;
@@ -4855,10 +4886,11 @@ export class Stringable {
                     let january: number = new Date(year, 0, 1).getTimezoneOffset();
                     let july: number = new Date(year, 6, 1).getTimezoneOffset();
 
-                    date += Math.max(january, july) !== now.getTimezoneOffset() ? '1' : '0';
+                    date += Math.max(january, july) === now.getTimezoneOffset() ? '0' : '1';
 
                     break;
                 }
+
                 // Difference to Greenwich time (GMT) without colon between hours and minutes (e.g., +0200)
                 case 'O': {
                     const timeZoneData: string = now.toLocaleDateString('en-us', { timeZoneName: 'longOffset', timeZone: tz ?? undefined, })
@@ -4866,7 +4898,7 @@ export class Stringable {
                         .pop()!
                         .trim();
 
-                    date += timeZoneData.length !== 3 ? timeZoneData.substring(3).replace(':', '') : '+0000';
+                    date += timeZoneData.length === 3 ? '+0000' : timeZoneData.substring(3).replace(':', '');
 
                     break;
                 }
@@ -4878,7 +4910,7 @@ export class Stringable {
                         .pop()!
                         .trim();
 
-                    date += timeZoneData.length !== 3 ? timeZoneData.substring(3) : '+00:00';
+                    date += timeZoneData.length === 3 ? '+00:00' : timeZoneData.substring(3);
 
                     break;
                 }
@@ -4918,8 +4950,8 @@ export class Stringable {
                     const sign: string = symbol ? symbol.pop()! : '+';
                     const offset: string = data.length === 2 ? (data[1] as string) : '0:00';
 
-                    const hours: number = parseInt(offset.split(':')[0] as string);
-                    const minutes: number = parseInt(offset.split(':')[1] as string);
+                    const hours: number = Number.parseInt(offset.split(':')[0] as string);
+                    const minutes: number = Number.parseInt(offset.split(':')[1] as string);
 
                     const offsetInSeconds: number = hours * 3600 + minutes * 60;
 
@@ -4934,6 +4966,7 @@ export class Stringable {
 
                     break;
                 }
+
                 // RFC 2822/RFC 5322 formatted date (e.g., Thu, 21 Dec 2000 16:01:07 +0200)
                 case 'r': {
                     date += new Stringable(this.#value).toDate('D, d M Y H:i:s O', tz);
@@ -4949,7 +4982,7 @@ export class Stringable {
                 }
 
                 default:
-                    date += element.length >= 2 && element.indexOf('\\') > -1 ? element.replace('\\', '') : element;
+                    date += element.length >= 2 && element.includes('\\') ? element.replace('\\', '') : element;
             }
         }
 
@@ -4983,7 +5016,7 @@ export class HtmlString {
      */
     toHtml(): HtmlStringType {
         const pattern: RegExp = /(?!<!DOCTYPE)<([^\s>]+)(\s|>)+/;
-        const tag: RegExpExecArray | null = RegExp(pattern).exec(this.#html);
+        const tag: RegExpExecArray | null = new RegExp(pattern).exec(this.#html);
 
         if (tag === null) {
             return this.#html;
@@ -5104,7 +5137,7 @@ function matchCase(value: string, comparison: string): string {
     return value;
 }
 
-if (typeof exports != 'undefined') {
+if (exports !== undefined) {
     module.exports.Mode = Mode;
     module.exports.Str = Str;
     module.exports.Stringable = Stringable;
@@ -5112,8 +5145,8 @@ if (typeof exports != 'undefined') {
     module.exports.str = str;
 }
 
-if (typeof global !== 'undefined') {
-    const _global: any = global;
+if (globalThis.global !== undefined) {
+    const _global: any = globalThis.global;
 
     _global.Mode = Mode;
     _global.Str = Str;
